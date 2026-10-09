@@ -353,6 +353,22 @@ div[data-testid="stMarkdown"] strong {{
     color: {css_theme["body_strong"]} !important;
 }}
 
+div[data-testid="stMarkdownContainer"] {{
+    max-width: 100% !important;
+    overflow-x: auto !important;
+}}
+
+div[data-testid="stMarkdownContainer"] table {{
+    display: block;
+    width: max-content;
+    min-width: 100%;
+}}
+
+div[data-testid="stMarkdownContainer"] pre {{
+    max-width: 100% !important;
+    overflow-x: auto !important;
+}}
+
 div[data-testid="stMarkdownContainer"] h1,
 div[data-testid="stMarkdownContainer"] h2,
 div[data-testid="stMarkdownContainer"] h3 {{

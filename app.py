@@ -19,8 +19,20 @@ from settings.market import CONFIG, LOOKBACK_MAP, MACRO_ANCHORS
 import ui.theme as theme_utils
 
 
-if not hasattr(theme_utils, "get_live_theme_mode"):
+_THEME_MODULE_MTIME_KEY = "_theme_module_mtime"
+_theme_module_mtime = Path(theme_utils.__file__).stat().st_mtime
+_last_theme_module_mtime = st.session_state.get(_THEME_MODULE_MTIME_KEY)
+
+if (
+    not hasattr(theme_utils, "get_live_theme_mode")
+    or (
+        _last_theme_module_mtime is None
+        or _last_theme_module_mtime != _theme_module_mtime
+    )
+):
     theme_utils = importlib.reload(theme_utils)
+
+st.session_state[_THEME_MODULE_MTIME_KEY] = _theme_module_mtime
 
 
 _THEME_MODE = theme_utils.get_live_theme_mode()
