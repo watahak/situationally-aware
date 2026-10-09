@@ -1,10 +1,11 @@
 import streamlit as st
+import importlib
 
 st.set_page_config(
     page_title="Capital Structure Decoder",
     page_icon="\U0001f310",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 import yfinance as yf
@@ -13,192 +14,33 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from pathlib import Path
-
-# ---------------------------------------------------------------------------
-# Global dark-mode styling
-# ---------------------------------------------------------------------------
-
-st.html("""
-<style>
-/* --- Mesh gradient background --- */
-.stApp {
-    background:
-        radial-gradient(ellipse 80% 60% at 15% 20%, rgba(56, 189, 248, 0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 80% at 85% 30%, rgba(16, 185, 129, 0.05) 0%, transparent 60%),
-        radial-gradient(ellipse 70% 50% at 50% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 65%),
-        radial-gradient(ellipse 40% 40% at 70% 60%, rgba(251, 191, 36, 0.025) 0%, transparent 50%),
-        linear-gradient(170deg, #0E1117 0%, #0C0F16 40%, #10131A 100%) !important;
-    background-attachment: fixed !important;
-}
-
-/* --- Card glassmorphism --- */
-div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
-    background: rgba(22, 27, 34, 0.55);
-    backdrop-filter: blur(12px) saturate(1.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"]:hover {
-    border-color: rgba(56, 189, 248, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-/* --- Entrance micro-animation --- */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-div[data-testid="stVerticalBlock"] > div {
-    animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* --- Typography hierarchy --- */
-h1[data-testid="stHeading"] {
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
-    color: #F1F5F9 !important;
-}
-h2[data-testid="stHeading"] {
-    font-weight: 500 !important;
-    letter-spacing: -0.01em !important;
-    color: #E2E8F0 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 0.4rem;
-    margin-top: 1.5rem !important;
-}
-h3[data-testid="stHeading"] {
-    font-weight: 500 !important;
-    color: #CBD5E1 !important;
-}
-
-/* Body text */
-div[data-testid="stMarkdown"] p {
-    color: #94A3B8;
-    line-height: 1.6;
-}
-div[data-testid="stMarkdown"] strong {
-    color: #E2E8F0;
-}
-
-/* Captions */
-div[data-testid="stCaptionContainer"] p {
-    color: #64748B !important;
-    font-size: 0.88rem !important;
-    letter-spacing: 0.01em;
-}
-
-/* --- Sidebar glassmorphism --- */
-section[data-testid="stSidebar"] {
-    background: rgba(14, 17, 23, 0.85) !important;
-    backdrop-filter: blur(16px) saturate(1.2);
-    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-section[data-testid="stSidebar"] > div:first-child {
-    padding-top: 1.5rem;
-}
-section[data-testid="stSidebar"] h1 {
-    font-size: 0.7rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.12em !important;
-    color: #64748B !important;
-    font-weight: 600 !important;
-    margin-bottom: 0.8rem !important;
-}
-
-/* Sidebar section subheadings */
-section[data-testid="stSidebar"] h4,
-section[data-testid="stSidebar"] div[data-testid="stMarkdown"] h4 {
-    font-size: 0.68rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.1em !important;
-    color: #64748B !important;
-    font-weight: 600 !important;
-    margin-top: 1rem !important;
-    margin-bottom: 0.4rem !important;
-}
-
-/* Sidebar radio buttons */
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-    padding: 0.35rem 0.6rem;
-    margin-bottom: 0.25rem;
-    transition: border-color 0.15s ease, background 0.15s ease;
-}
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    border-color: rgba(56, 189, 248, 0.3);
-    background: rgba(30, 41, 59, 0.8);
-}
-section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"],
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-    border-color: rgba(56, 189, 248, 0.5);
-    background: rgba(56, 189, 248, 0.08);
-}
-
-/* Sidebar checkboxes */
-section[data-testid="stSidebar"] div[data-testid="stCheckbox"] label {
-    background: rgba(30, 41, 59, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 8px;
-    padding: 0.3rem 0.5rem;
-    transition: border-color 0.15s ease;
-}
-section[data-testid="stSidebar"] div[data-testid="stCheckbox"] label:hover {
-    border-color: rgba(56, 189, 248, 0.2);
-}
-
-/* Sidebar dividers */
-section[data-testid="stSidebar"] hr {
-    border-color: rgba(255, 255, 255, 0.06) !important;
-    margin: 1rem 0 !important;
-}
-
-/* Sidebar captions */
-section[data-testid="stSidebar"] div[data-testid="stCaptionContainer"] p {
-    color: #475569 !important;
-    font-size: 0.82rem !important;
-}
-
-/* Tab labels */
-button[data-baseweb="tab"] p {
-    font-weight: 500 !important;
-    letter-spacing: 0.02em;
-}
-
-/* Expander headers */
-div[data-testid="stExpander"] summary span p {
-    font-weight: 500 !important;
-    color: #CBD5E1 !important;
-}
-</style>
-""")
+from settings.app_constants import NO_DATA_MSG, ROTATION_LANES
+from settings.market import CONFIG, LOOKBACK_MAP, MACRO_ANCHORS
+import ui.theme as theme_utils
 
 
-# ---------------------------------------------------------------------------
-# Dark palette constants
-# ---------------------------------------------------------------------------
+if not hasattr(theme_utils, "get_live_theme_mode"):
+    theme_utils = importlib.reload(theme_utils)
 
-_DARK = {
-    "base": "#0E1117",
-    "card": "#161B22",
-    "slate": "#1E293B",
-    "accent": "#38BDF8",
-    "accent_fill": "rgba(56, 189, 248, 0.08)",
-    "green": "#10B981",
-    "red": "#EF4444",
-    "amber": "#FBBF24",
-    "text": "#E2E8F0",
-    "muted": "#94A3B8",
-    "grid": "rgba(255, 255, 255, 0.05)",
-}
+
+_THEME_MODE = theme_utils.get_live_theme_mode()
+_PLOTLY_TEMPLATE = theme_utils.get_plotly_template(_THEME_MODE)
+_DARK = theme_utils.get_active_palette(_THEME_MODE)
+theme_utils.inject_theme_styles(_THEME_MODE)
+
+_IS_LIGHT_THEME = _THEME_MODE == "light"
+_ECHART_LINE = "rgba(15, 23, 42, 0.16)" if _IS_LIGHT_THEME else "rgba(255, 255, 255, 0.1)"
+_ECHART_BORDER = "rgba(15, 23, 42, 0.18)" if _IS_LIGHT_THEME else "rgba(255, 255, 255, 0.1)"
+_ECHART_CELL_BORDER = "rgba(15, 23, 42, 0.12)" if _IS_LIGHT_THEME else "rgba(255,255,255,0.06)"
+_ECHART_SHADOW = "rgba(15, 23, 42, 0.22)" if _IS_LIGHT_THEME else "rgba(0,0,0,0.35)"
+_ZSCORE_NEUTRAL_BAR = "rgba(100, 116, 139, 0.42)" if _IS_LIGHT_THEME else "rgba(148, 163, 184, 0.4)"
+_ZSCORE_NEUTRAL_BAR_FAINT = "rgba(100, 116, 139, 0.22)" if _IS_LIGHT_THEME else "rgba(148, 163, 184, 0.2)"
+_ZSCORE_BAND_NEUTRAL = "rgba(15, 23, 42, 0.06)" if _IS_LIGHT_THEME else "rgba(255, 255, 255, 0.03)"
+_ZSCORE_BAND_WARNING = "rgba(217, 119, 6, 0.12)" if _IS_LIGHT_THEME else "rgba(234, 179, 8, 0.08)"
+_ZSCORE_BAND_RISK = "rgba(220, 38, 38, 0.14)" if _IS_LIGHT_THEME else "rgba(239, 68, 68, 0.12)"
 
 _CHART_LAYOUT = dict(
-    template="plotly_dark",
+    template=_PLOTLY_TEMPLATE,
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color=_DARK["text"], family="Inter, sans-serif"),
@@ -206,9 +48,6 @@ _CHART_LAYOUT = dict(
 )
 
 from core import (
-    CONFIG,
-    MACRO_ANCHORS,
-    LOOKBACK_MAP,
     e,
     pair_display_name,
     get_all_tickers,
@@ -263,13 +102,6 @@ def fetch_data(tickers: tuple[str, ...], period_days: int) -> pd.DataFrame:
 # Chart builders (return go.Figure — no st.* calls)
 # ---------------------------------------------------------------------------
 
-ROTATION_LANES = [
-    ("US breadth / international leadership", ["RSP", "SPY", "VXUS"]),
-    ("US / China tech leadership", ["QQQE", "QQQ", "KWEB", "MCHI"]),
-    ("Singapore versus emerging markets", ["EEM", "EWS"]),
-    ("Gold versus Treasury duration", ["TLT", "GLD"]),
-]
-
 _ROTATION = {
     "surface": "rgba(0,0,0,0)",
     "text": _DARK["text"],
@@ -277,11 +109,11 @@ _ROTATION = {
     "neutral": "#64748B",
     "grid": _DARK["grid"],
     "accent": _DARK["accent"],
-    "lane_bg": "rgba(255, 255, 255, 0.025)",
-    "lane_border": "rgba(255, 255, 255, 0.06)",
+    "lane_bg": "rgba(15, 23, 42, 0.05)" if _IS_LIGHT_THEME else "rgba(255, 255, 255, 0.025)",
+    "lane_border": "rgba(15, 23, 42, 0.14)" if _IS_LIGHT_THEME else "rgba(255, 255, 255, 0.06)",
     "node_fill": _DARK["slate"],
     "node_ring": _DARK["accent"],
-    "selected_glow": "rgba(56, 189, 248, 0.3)",
+    "selected_glow": "rgba(2, 132, 199, 0.22)" if _IS_LIGHT_THEME else "rgba(56, 189, 248, 0.3)",
 }
 
 
@@ -446,7 +278,7 @@ def build_rotation_network(
             line=dict(color=color, width=2, dash=dash), hoverinfo="skip",
         ))
     fig.update_layout(
-        template="plotly_dark", height=740,
+        template=_PLOTLY_TEMPLATE, height=740,
         margin=dict(l=25, r=25, t=20, b=90),
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color=c["text"], family="Inter, sans-serif"),
@@ -571,13 +403,13 @@ def build_heatmap_echart(roc_df: pd.DataFrame) -> dict:
             "type": "heatmap",
             "data": column_points,
             "itemStyle": {
-                "borderColor": "rgba(255,255,255,0.06)",
+                "borderColor": _ECHART_CELL_BORDER,
                 "borderWidth": 1,
             },
             "emphasis": {
                 "itemStyle": {
                     "shadowBlur": 8,
-                    "shadowColor": "rgba(0,0,0,0.35)",
+                    "shadowColor": _ECHART_SHADOW,
                 }
             },
             "animationDuration": 700,
@@ -596,7 +428,7 @@ def build_heatmap_echart(roc_df: pd.DataFrame) -> dict:
         "tooltip": {
             "position": "top",
             "backgroundColor": _DARK["slate"],
-            "borderColor": "rgba(255,255,255,0.1)",
+            "borderColor": _ECHART_BORDER,
             "textStyle": {"color": _DARK["text"], "fontSize": 13},
         },
         "xAxis": {
@@ -604,7 +436,7 @@ def build_heatmap_echart(roc_df: pd.DataFrame) -> dict:
             "position": "top",
             "data": cols,
             "axisTick": {"show": False},
-            "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.1)"}},
+            "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
             "axisLabel": {
                 "color": _DARK["muted"],
                 "fontSize": 11,
@@ -618,7 +450,7 @@ def build_heatmap_echart(roc_df: pd.DataFrame) -> dict:
             "type": "category",
             "data": rows,
             "axisTick": {"show": False},
-            "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.1)"}},
+            "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
             "axisLabel": {"color": _DARK["text"], "fontSize": 12, "margin": 6},
             "splitLine": {"show": False},
         },
@@ -752,20 +584,21 @@ def build_ratio_echart(
         "tooltip": {
             "trigger": "axis",
             "backgroundColor": _DARK["slate"],
-            "borderColor": "rgba(255,255,255,0.1)",
+            "borderColor": _ECHART_BORDER,
             "textStyle": {"color": _DARK["text"], "fontSize": 13},
         },
         "legend": {
             "data": [s["name"] for s in series],
-            "right": "2%",
-            "top": "2%",
+            "orient": "horizontal",
+            "left": "center",
+            "bottom": "1%",
             "textStyle": {"color": _DARK["muted"], "fontSize": 11},
         },
-        "grid": {"left": "4%", "right": "3%", "top": "18%", "bottom": "10%", "containLabel": True},
+        "grid": {"left": "4%", "right": "3%", "top": "18%", "bottom": "20%", "containLabel": True},
         "xAxis": {
             "type": "category",
             "data": dates,
-            "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.1)"}},
+            "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
             "axisLabel": {"color": _DARK["muted"], "fontSize": 11},
             "splitLine": {"show": False},
         },
@@ -934,7 +767,7 @@ def build_zscore_chart(
     lo, hi = thresholds
 
     colors = [
-        _DARK["red"] if v <= lo else _DARK["green"] if v >= hi else "rgba(148, 163, 184, 0.4)"
+        _DARK["red"] if v <= lo else _DARK["green"] if v >= hi else _ZSCORE_NEUTRAL_BAR
         for v in zscore.values
     ]
 
@@ -948,11 +781,11 @@ def build_zscore_chart(
     )
 
     y_max = max(abs(zscore.min()), abs(zscore.max()), 3.5) + 0.5
-    fig.add_hrect(y0=-1, y1=1, fillcolor="rgba(255, 255, 255, 0.03)", line_width=0)
-    fig.add_hrect(y0=1, y1=2, fillcolor="rgba(234, 179, 8, 0.08)", line_width=0)
-    fig.add_hrect(y0=-2, y1=-1, fillcolor="rgba(234, 179, 8, 0.08)", line_width=0)
-    fig.add_hrect(y0=2, y1=y_max, fillcolor="rgba(239, 68, 68, 0.12)", line_width=0)
-    fig.add_hrect(y0=-y_max, y1=-2, fillcolor="rgba(239, 68, 68, 0.12)", line_width=0)
+    fig.add_hrect(y0=-1, y1=1, fillcolor=_ZSCORE_BAND_NEUTRAL, line_width=0)
+    fig.add_hrect(y0=1, y1=2, fillcolor=_ZSCORE_BAND_WARNING, line_width=0)
+    fig.add_hrect(y0=-2, y1=-1, fillcolor=_ZSCORE_BAND_WARNING, line_width=0)
+    fig.add_hrect(y0=2, y1=y_max, fillcolor=_ZSCORE_BAND_RISK, line_width=0)
+    fig.add_hrect(y0=-y_max, y1=-2, fillcolor=_ZSCORE_BAND_RISK, line_width=0)
 
     fig.add_hline(y=hi, line_dash="dash", line_color=_DARK["green"], line_width=1,
                   annotation_text=f"+{hi}", annotation_position="top left",
@@ -998,10 +831,10 @@ def build_zscore_echart(
             elif value >= hi:
                 color = _DARK["green"]
             else:
-                color = "rgba(148, 163, 184, 0.4)"
+                color = _ZSCORE_NEUTRAL_BAR
             bars.append({"value": value, "itemStyle": {"color": color}})
         else:
-            bars.append({"value": None, "itemStyle": {"color": "rgba(148, 163, 184, 0.2)"}})
+            bars.append({"value": None, "itemStyle": {"color": _ZSCORE_NEUTRAL_BAR_FAINT}})
 
     y_max = max(finite_values) + 0.5 if finite_values else 4.0
     y_max = max(y_max, 4.0)
@@ -1018,7 +851,7 @@ def build_zscore_echart(
             "trigger": "axis",
             "axisPointer": {"type": "shadow"},
             "backgroundColor": _DARK["slate"],
-            "borderColor": "rgba(255,255,255,0.1)",
+            "borderColor": _ECHART_BORDER,
             "textStyle": {"color": _DARK["text"], "fontSize": 13},
         },
         "grid": {"left": "6%", "right": "3%", "top": "18%", "bottom": "12%", "containLabel": True},
@@ -1026,7 +859,7 @@ def build_zscore_echart(
             "type": "category",
             "data": dates,
             "axisTick": {"show": False},
-            "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.1)"}},
+            "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
             "axisLabel": {"color": _DARK["muted"], "fontSize": 11},
             "splitLine": {"show": False},
         },
@@ -1049,11 +882,11 @@ def build_zscore_echart(
                 "markArea": {
                     "silent": True,
                     "data": [
-                        [{"yAxis": -1, "itemStyle": {"color": "rgba(255, 255, 255, 0.03)"}}, {"yAxis": 1}],
-                        [{"yAxis": 1, "itemStyle": {"color": "rgba(234, 179, 8, 0.08)"}}, {"yAxis": 2}],
-                        [{"yAxis": -2, "itemStyle": {"color": "rgba(234, 179, 8, 0.08)"}}, {"yAxis": -1}],
-                        [{"yAxis": 2, "itemStyle": {"color": "rgba(239, 68, 68, 0.12)"}}, {"yAxis": y_max}],
-                        [{"yAxis": -y_max, "itemStyle": {"color": "rgba(239, 68, 68, 0.12)"}}, {"yAxis": -2}],
+                        [{"yAxis": -1, "itemStyle": {"color": _ZSCORE_BAND_NEUTRAL}}, {"yAxis": 1}],
+                        [{"yAxis": 1, "itemStyle": {"color": _ZSCORE_BAND_WARNING}}, {"yAxis": 2}],
+                        [{"yAxis": -2, "itemStyle": {"color": _ZSCORE_BAND_WARNING}}, {"yAxis": -1}],
+                        [{"yAxis": 2, "itemStyle": {"color": _ZSCORE_BAND_RISK}}, {"yAxis": y_max}],
+                        [{"yAxis": -y_max, "itemStyle": {"color": _ZSCORE_BAND_RISK}}, {"yAxis": -2}],
                     ],
                 },
                 "markLine": {
@@ -1098,7 +931,7 @@ def build_financialization_echart(gap_df: pd.DataFrame) -> dict:
             "trigger": "axis",
             "axisPointer": {"type": "shadow"},
             "backgroundColor": _DARK["slate"],
-            "borderColor": "rgba(255,255,255,0.1)",
+            "borderColor": _ECHART_BORDER,
             "textStyle": {"color": _DARK["text"], "fontSize": 13},
         },
         "legend": {
@@ -1123,7 +956,7 @@ def build_financialization_echart(gap_df: pd.DataFrame) -> dict:
             "data": labels,
             "inverse": True,
             "axisLabel": {"color": _DARK["text"], "fontSize": 12},
-            "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.1)"}},
+            "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
             "splitLine": {"show": False},
         },
         "series": [
@@ -1160,11 +993,6 @@ def build_financialization_echart(gap_df: pd.DataFrame) -> dict:
     return option
 
 
-_NO_DATA_MSG = (
-    "Market data is unavailable. "
-    "Saved analysis reports in the Analysis tab are still accessible."
-)
-
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
@@ -1193,7 +1021,7 @@ def render_sidebar() -> dict:
 
     st.sidebar.markdown("---")
 
-    with st.sidebar.expander("Ticker Legend", expanded=False):
+    with st.sidebar.expander("Ticker Legend", expanded=True):
         for ticker, desc in CONFIG["ticker_legend"].items():
             st.markdown(f"**{e(ticker)}** — {desc}")
 
@@ -1259,7 +1087,7 @@ def render_rotation_tab(prices: pd.DataFrame):
         "within each comparison lane over the selected window.*"
     )
     if prices.empty:
-        st.warning(_NO_DATA_MSG)
+        st.warning(NO_DATA_MSG)
         return
 
     prices = prices.sort_index()
@@ -1360,7 +1188,7 @@ def render_rotation_tab(prices: pd.DataFrame):
 def render_dashboard_tab(settings: dict, prices: pd.DataFrame):
     """Render the Dashboard tab — all charts and data."""
     if prices.empty:
-        st.warning(_NO_DATA_MSG)
+        st.warning(NO_DATA_MSG)
         return
 
     # --- Section A: Momentum Heatmap ----------------------------------------
@@ -1489,7 +1317,7 @@ def render_dashboard_tab(settings: dict, prices: pd.DataFrame):
     )
 
     vintage = MACRO_ANCHORS["last_updated"]
-    vintage_text = f"Data vintage: {vintage}" if vintage[0].isdigit() else "Vintage: update MACRO_ANCHORS in core.py"
+    vintage_text = f"Data vintage: {vintage}" if vintage[0].isdigit() else "Vintage: update MACRO_ANCHORS in settings/market.py"
     st.caption(
         f"{vintage_text} · "
         f"GDP: {MACRO_ANCHORS['gdp_source']} · "

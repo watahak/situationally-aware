@@ -16,10 +16,8 @@ import pandas as pd
 import yfinance as yf
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from settings.market import CONFIG, FUNDAMENTALS_TICKERS, MACRO_ANCHORS
 from core import (
-    CONFIG,
-    MACRO_ANCHORS,
-    FUNDAMENTALS_TICKERS,
     get_all_tickers,
     calc_roc_table,
     calc_ratio,
