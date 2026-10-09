@@ -866,13 +866,13 @@ def build_zscore_echart(
             "borderColor": _ECHART_BORDER,
             "textStyle": {"color": _DARK["text"], "fontSize": 13},
         },
-        "grid": {"left": "6%", "right": "3%", "top": "18%", "bottom": "12%", "containLabel": True},
+        "grid": {"left": "6%", "right": "5%", "top": "20%", "bottom": "16%", "containLabel": True},
         "xAxis": {
             "type": "category",
             "data": dates,
             "axisTick": {"show": False},
             "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
-            "axisLabel": {"color": _DARK["muted"], "fontSize": 11},
+            "axisLabel": {"color": _DARK["muted"], "fontSize": 11, "hideOverlap": True},
             "splitLine": {"show": False},
         },
         "yAxis": {
@@ -1284,7 +1284,7 @@ def render_dashboard_tab(settings: dict, prices: pd.DataFrame):
             render_echart_inview(
                 build_zscore_echart(zscore_display, CONFIG["zscore_thresholds"], display_name),
                 key=f"zscore-echart-{_pair_name_to_slug(pair_name)}",
-                height=320,
+                height=340,
                 threshold=0.35,
                 alt=f"{display_name} rolling z-score bars with sigma bands.",
             )
