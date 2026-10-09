@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "context_type": "seasonal",
+  "data_as_of": "2026-Q3",
+  "retrieved_on": "2026-10-09",
+  "freshness_days": 90,
+  "sources": [
+    "NVIDIA Corporation Form 10-Q & Quarterly Earnings Transcripts",
+    "Microsoft Corporation Form 10-Q & Earnings Release",
+    "Alphabet Inc. Form 10-Q & Earnings Release",
+    "Amazon.com, Inc. Form 10-Q & Earnings Release",
+    "Meta Platforms, Inc. Form 10-Q & Earnings Release",
+    "Apple Inc. & Tesla, Inc. Form 10-Q Filings"
+  ],
+  "data": {
+    "hyperscaler_ai_capex_annual_bn": 250.0,
+    "nvidia_dc_rev_hyperscaler_pct": 48.0,
+    "mag7_intercompany_rev_pct": 3.9,
+    "mag7_total_rev_ttm_bn": 1945.0,
+    "notes": "Hyperscaler Capex aggregates annualized property/equipment additions for MSFT (~$78B), AMZN (~$75B), GOOGL (~$52B), and META (~$45B). Intercompany revenue (~$75B total) comprises NVDA direct AI hardware sales to hyperscalers (~$53B), intercompany cloud compute/storage consumption (~$13B), and cross-member digital advertising spend (~$9B)."
+  }
+}

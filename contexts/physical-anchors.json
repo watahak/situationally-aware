@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "context_type": "structural",
+  "data_as_of": "2024",
+  "retrieved_on": "2026-10-09",
+  "freshness_days": 365,
+  "sources": [
+    "Energy Institute Statistical Review of World Energy 2025",
+    "World Bank / UNIDO Manufacturing Value Added (MVA) 2024/2025"
+  ],
+  "data": {
+    "us_energy_pct": 15.2,
+    "us_manufacturing_pct": 15.9,
+    "china_energy_pct": 28.3,
+    "china_manufacturing_pct": 31.6,
+    "data_year_energy": "2024",
+    "data_year_manufacturing": "2023",
+    "notes": "Energy consumption shares derived from Energy Institute Statistical Review primary energy totals (Exajoules). Manufacturing shares reflect current USD Manufacturing Value Added (MVA) from UNIDO/World Bank database."
+  }
+}

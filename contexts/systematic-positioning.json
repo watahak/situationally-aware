@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "context_type": "tactical",
+  "data_as_of": "2026-10-07",
+  "retrieved_on": "2026-10-09",
+  "freshness_days": 14,
+  "sources": [
+    "Deutsche Bank CTA Positioning Index",
+    "SpotGamma GEX Dashboard",
+    "Nomura Systematic Strategy Monitor / Wall Street Flow Analytics"
+  ],
+  "data": {
+    "cta_us_equity_position": "net long",
+    "cta_percentile": 78,
+    "dealer_gamma_spy": "positive",
+    "dealer_gamma_qqq": "positive",
+    "gamma_magnitude": "Moderate positive gamma ($3.2B/1% move on SPY); dealer hedging acting as a dampener/stabilizer on price swings near current index levels.",
+    "vol_target_equity_alloc": "elevated",
+    "notes": "CTA positioning remains comfortably net long in US equities (78th percentile), though medium-term trend models have narrowed the distance to sell triggers. Dealer gamma across SPY and QQQ remains positive, promoting mean-reverting intra-day behavior. Volatility-targeting and risk-parity strategies maintain elevated equity exposures owing to suppressed realized volatility."
+  }
+}
