@@ -866,7 +866,7 @@ def build_zscore_echart(
             "borderColor": _ECHART_BORDER,
             "textStyle": {"color": _DARK["text"], "fontSize": 13},
         },
-        "grid": {"left": "6%", "right": "5%", "top": "20%", "bottom": "16%", "containLabel": True},
+        "grid": {"left": "4%", "right": "3%", "top": "20%", "bottom": "16%", "containLabel": True},
         "xAxis": {
             "type": "category",
             "data": dates,
@@ -909,12 +909,24 @@ def build_zscore_echart(
                         {
                             "yAxis": hi,
                             "lineStyle": {"type": "dashed", "color": _DARK["green"]},
-                            "label": {"show": True, "formatter": f"+{hi:g}", "color": _DARK["green"], "position": "end"},
+                            "label": {
+                                "show": True,
+                                "formatter": f"+{hi:g}",
+                                "color": _DARK["green"],
+                                "position": "insideEndTop",
+                                "distance": 6,
+                            },
                         },
                         {
                             "yAxis": lo,
                             "lineStyle": {"type": "dashed", "color": _DARK["red"]},
-                            "label": {"show": True, "formatter": f"{lo:g}", "color": _DARK["red"], "position": "end"},
+                            "label": {
+                                "show": True,
+                                "formatter": f"{lo:g}",
+                                "color": _DARK["red"],
+                                "position": "insideEndBottom",
+                                "distance": 6,
+                            },
                         },
                         {
                             "yAxis": 0,
