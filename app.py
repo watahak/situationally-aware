@@ -18,6 +18,7 @@ from settings.app_constants import NO_DATA_MSG, ROTATION_LANES
 from settings.market import CONFIG, LOOKBACK_MAP, MACRO_ANCHORS
 import ui.theme as theme_utils
 import ui.navigation as nav_utils
+import ui.opinion_tab as opinion_tab
 
 
 _THEME_MODULE_MTIME_KEY = "_theme_module_mtime"
@@ -1420,7 +1421,7 @@ def render_analysis_tab(*, theme_mode: str = "dark"):
             "to generate your first monthly report."
         )
     st.html(
-        nav_utils.build_tab_arrows_html(1, 2, ["Signal", "Analysis"], theme_mode),
+        nav_utils.build_tab_arrows_html(1, 3, ["Signal", "Analysis", "Opinion"], theme_mode),
         unsafe_allow_javascript=True,
     )
 
@@ -1792,7 +1793,7 @@ def render_dashboard_tab(settings: dict, prices: pd.DataFrame, *, theme_mode: st
         )
 
     st.html(
-        nav_utils.build_tab_arrows_html(0, 2, ["Signal", "Analysis"], theme_mode),
+        nav_utils.build_tab_arrows_html(0, 3, ["Signal", "Analysis", "Opinion"], theme_mode),
         unsafe_allow_javascript=True,
     )
 
@@ -1819,13 +1820,37 @@ def main():
         st.warning(f"Market-data download issue: {exc}")
         prices = pd.DataFrame()
 
-    tab_dashboard, tab_analysis = st.tabs(["Signal", "Analysis"])
+    tab_dashboard, tab_analysis, tab_opinion = st.tabs(
+        ["Signal", "Analysis", "Opinion"]
+    )
 
     with tab_dashboard:
         render_dashboard_tab(settings, prices, theme_mode=_THEME_MODE)
 
     with tab_analysis:
         render_analysis_tab(theme_mode=_THEME_MODE)
+
+    with tab_opinion:
+        _chart_builders = {
+            "build_ratio_echart": build_ratio_echart,
+            "build_zscore_echart": build_zscore_echart,
+            "build_heatmap_echart": build_heatmap_echart,
+            "build_financialization_echart": build_financialization_echart,
+            "build_gauges_echart": build_gauges_echart,
+            "build_sankey_echart": build_sankey_echart,
+            "build_butterfly_echart": build_butterfly_echart,
+            "load_context": load_context,
+        }
+        opinion_tab.render_opinion_tab(
+            settings,
+            prices,
+            theme_mode=_THEME_MODE,
+            render_echart=render_echart_inview,
+            chart_builders=_chart_builders,
+            nav_html=nav_utils.build_tab_arrows_html(
+                2, 3, ["Signal", "Analysis", "Opinion"], _THEME_MODE
+            ),
+        )
 
 
 
