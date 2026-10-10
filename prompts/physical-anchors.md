@@ -34,6 +34,12 @@ Find the most recent available data for:
 
 4. **China share of global manufacturing output (%)** — same World Bank/UNIDO source.
 
+5. **Europe (EU-27) share of global primary energy consumption (%)** — same Energy
+   Institute source.
+
+6. **Europe (EU-27) share of global manufacturing output (%)** — same World Bank/UNIDO
+   source.
+
 For each, provide the exact percentage, the source publication, and the data year.
 
 ---
@@ -58,6 +64,8 @@ Paste results into `contexts/physical-anchors.json` using this structure:
     "us_manufacturing_pct": null,
     "china_energy_pct": null,
     "china_manufacturing_pct": null,
+    "europe_energy_pct": null,
+    "europe_manufacturing_pct": null,
     "data_year_energy": null,
     "data_year_manufacturing": null,
     "notes": ""

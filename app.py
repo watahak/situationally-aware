@@ -17,6 +17,7 @@ from pathlib import Path
 from settings.app_constants import NO_DATA_MSG, ROTATION_LANES
 from settings.market import CONFIG, LOOKBACK_MAP, MACRO_ANCHORS
 import ui.theme as theme_utils
+import ui.navigation as nav_utils
 
 
 _THEME_MODULE_MTIME_KEY = "_theme_module_mtime"
@@ -1018,11 +1019,333 @@ def build_financialization_echart(gap_df: pd.DataFrame) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Context chart builders
+# ---------------------------------------------------------------------------
+
+import json as _json
+
+_CONTEXTS_DIR = Path(__file__).parent / "contexts"
+
+
+def load_context(name: str) -> dict | None:
+    path = _CONTEXTS_DIR / f"{name}.json"
+    if not path.exists():
+        return None
+    return _json.loads(path.read_text())
+
+
+def build_sankey_echart(ctx: dict) -> dict:
+    d = ctx["data"]
+    capex_split = d.get("capex_by_company", {})
+    breakdown = d.get("intercompany_breakdown_bn", {})
+    hw_total = breakdown.get("ai_hardware", 0)
+    cloud_total = breakdown.get("cloud_compute", 0)
+    ads_total = breakdown.get("digital_ads", 0)
+
+    capex_sum = sum(capex_split.values()) or 1
+    nodes = []
+    links = []
+
+    accent_base = (56, 189, 248) if not _IS_LIGHT_THEME else (2, 132, 199)
+    companies = list(capex_split.keys())
+    opacities = [0.9, 0.7, 0.55, 0.4]
+
+    category_labels = {"ai_hardware": "AI Hardware", "cloud_compute": "Cloud Compute", "digital_ads": "Digital Ads"}
+    category_display = [category_labels[k] for k in breakdown]
+
+    node_colors = {}
+    for i, co in enumerate(companies):
+        op = opacities[i] if i < len(opacities) else 0.4
+        node_colors[co] = f"rgba({accent_base[0]}, {accent_base[1]}, {accent_base[2]}, {op})"
+    for cat in category_display:
+        node_colors[cat] = _DARK["amber"]
+    node_colors["NVDA"] = _DARK["green"]
+    node_colors["Intercompany"] = _DARK["muted"]
+
+    all_node_names = companies + category_display + ["NVDA", "Intercompany"]
+    for node_name in all_node_names:
+        nodes.append({"name": node_name, "itemStyle": {"color": node_colors.get(node_name, _DARK["accent"])}})
+
+    category_totals = list(breakdown.values())
+    for co, capex in capex_split.items():
+        share = capex / capex_sum
+        for cat_label, cat_total in zip(category_display, category_totals):
+            links.append({"source": co, "target": cat_label, "value": round(cat_total * share)})
+
+    links.append({"source": "AI Hardware", "target": "NVDA", "value": hw_total})
+    links.append({"source": "Cloud Compute", "target": "Intercompany", "value": cloud_total})
+    links.append({"source": "Digital Ads", "target": "Intercompany", "value": ads_total})
+
+    return {
+        "backgroundColor": "transparent",
+        "tooltip": {
+            "trigger": "item",
+            "triggerOn": "mousemove",
+            "backgroundColor": _DARK["slate"],
+            "borderColor": _ECHART_BORDER,
+            "textStyle": {"color": _DARK["text"], "fontSize": 13},
+        },
+        "series": [{
+            "type": "sankey",
+            "orient": "horizontal",
+            "layoutIterations": 32,
+            "nodeWidth": 24,
+            "nodeGap": 14,
+            "data": nodes,
+            "links": links,
+            "emphasis": {"focus": "adjacency"},
+            "lineStyle": {"color": "gradient", "curveness": 0.5, "opacity": 0.35},
+            "label": {
+                "color": _DARK["text"],
+                "fontSize": 12,
+                "fontFamily": "Inter, sans-serif",
+                "formatter": "{b}\n${c}B",
+            },
+            "animationDuration": 1200,
+            "animationEasing": "cubicOut",
+        }],
+    }
+
+
+def build_butterfly_echart(physical: dict, fin_regions: list) -> dict:
+    rows = []
+    for region_key, label in [("us", "US"), ("china", "China")]:
+        energy = physical.get(f"{region_key}_energy_pct", 0)
+        mfg = physical.get(f"{region_key}_manufacturing_pct", 0)
+        mcap = 0
+        for r in fin_regions:
+            if r["label"] == label:
+                mcap = r["mcap_pct"]
+                break
+        rows.append({"label": label, "energy": energy, "mfg": mfg, "mcap": mcap})
+
+    eu_energy = physical.get("europe_energy_pct", 0)
+    eu_mfg = physical.get("europe_manufacturing_pct", 0)
+    for r in fin_regions:
+        if r["label"] == "Europe":
+            rows.append({"label": "Europe", "energy": eu_energy, "mfg": eu_mfg, "mcap": r["mcap_pct"]})
+            break
+
+    labels = [r["label"] for r in rows]
+    energy_data = [{"value": -r["energy"], "label": {"formatter": f"{r['energy']}%"}} for r in rows]
+    mfg_data = [{"value": -r["mfg"], "label": {"formatter": f"{r['mfg']}%"}} for r in rows]
+    mcap_data = [{"value": r["mcap"], "label": {"formatter": f"{r['mcap']}%"}} for r in rows]
+
+    amber1 = _DARK["amber"]
+    amber2 = "rgba(251, 191, 36, 0.55)" if not _IS_LIGHT_THEME else "rgba(217, 119, 6, 0.55)"
+
+    raw_phys = [r["energy"] + r["mfg"] for r in rows]
+    raw_mcap = [r["mcap"] for r in rows]
+    max_val = max(max(raw_phys), max(raw_mcap)) + 8
+
+    return {
+        "backgroundColor": "transparent",
+        "tooltip": {
+            "trigger": "axis",
+            "axisPointer": {"type": "shadow"},
+            "backgroundColor": _DARK["slate"],
+            "borderColor": _ECHART_BORDER,
+            "textStyle": {"color": _DARK["text"], "fontSize": 13},
+        },
+        "legend": {
+            "data": ["Energy Consumption %", "Manufacturing %", "Market Cap Weight %"],
+            "left": "center",
+            "top": "0%",
+            "textStyle": {"color": _DARK["muted"], "fontSize": 11},
+        },
+        "grid": {"left": "3%", "right": "3%", "top": "14%", "bottom": "6%", "containLabel": True},
+        "graphic": [
+            {"type": "text", "left": "8%", "bottom": "0%", "style": {"text": "← Physical Economy", "fill": _DARK["muted"], "fontSize": 11}},
+            {"type": "text", "right": "8%", "bottom": "0%", "style": {"text": "Financial Weight →", "fill": _DARK["muted"], "fontSize": 11}},
+        ],
+        "xAxis": {
+            "type": "value",
+            "min": -max_val,
+            "max": max_val,
+            "axisLabel": {"show": False},
+            "splitLine": {"show": False},
+            "axisLine": {"show": False},
+        },
+        "yAxis": {
+            "type": "category",
+            "data": labels,
+            "axisLabel": {"color": _DARK["text"], "fontSize": 13, "fontWeight": "bold"},
+            "axisLine": {"lineStyle": {"color": _ECHART_LINE}},
+            "axisTick": {"show": False},
+            "splitLine": {"show": False},
+        },
+        "series": [
+            {
+                "name": "Energy Consumption %",
+                "type": "bar",
+                "stack": "physical",
+                "data": energy_data,
+                "itemStyle": {"color": amber1, "borderRadius": [3, 0, 0, 3]},
+                "label": {
+                    "show": True,
+                    "position": "left",
+                    "color": _DARK["text"],
+                    "fontSize": 11,
+                },
+                "animationDuration": 1200,
+                "animationEasing": "cubicOut",
+            },
+            {
+                "name": "Manufacturing %",
+                "type": "bar",
+                "stack": "physical",
+                "data": mfg_data,
+                "itemStyle": {"color": amber2},
+                "label": {
+                    "show": True,
+                    "position": "left",
+                    "color": _DARK["text"],
+                    "fontSize": 11,
+                },
+                "animationDuration": 1200,
+                "animationDelay": 200,
+                "animationEasing": "cubicOut",
+            },
+            {
+                "name": "Market Cap Weight %",
+                "type": "bar",
+                "data": mcap_data,
+                "itemStyle": {"color": _DARK["accent"], "borderRadius": [0, 3, 3, 0]},
+                "label": {
+                    "show": True,
+                    "position": "right",
+                    "color": _DARK["text"],
+                    "fontSize": 11,
+                },
+                "animationDuration": 1200,
+                "animationDelay": 400,
+                "animationEasing": "cubicOut",
+            },
+        ],
+    }
+
+
+def build_gauges_echart(ctx: dict) -> dict:
+    d = ctx["data"]
+    cta_val = d.get("cta_percentile", 50)
+
+    gamma_text = d.get("dealer_gamma_spy", "neutral")
+    gamma_val = 75 if gamma_text == "positive" else (25 if gamma_text == "negative" else 50)
+
+    vol_text = d.get("vol_target_equity_alloc", "neutral")
+    vol_val = 80 if vol_text == "elevated" else (50 if vol_text == "neutral" else 30)
+
+    green = _DARK["green"]
+    red = _DARK["red"]
+    amber = _DARK["amber"]
+    gray = "rgba(148, 163, 184, 0.25)" if not _IS_LIGHT_THEME else "rgba(100, 116, 139, 0.25)"
+    pointer_color = _DARK["text"]
+
+    gauge_common = {
+        "startAngle": 180,
+        "endAngle": 0,
+        "min": 0,
+        "max": 100,
+        "splitNumber": 4,
+        "pointer": {
+            "length": "60%",
+            "width": 5,
+            "itemStyle": {"color": pointer_color},
+        },
+        "axisTick": {"show": False},
+        "splitLine": {"show": False},
+        "axisLabel": {"show": False},
+        "anchor": {"show": True, "size": 10, "itemStyle": {"color": pointer_color}},
+        "animationDuration": 1500,
+        "animationEasing": "elasticOut",
+    }
+
+    return {
+        "backgroundColor": "transparent",
+        "series": [
+            {
+                **gauge_common,
+                "type": "gauge",
+                "center": ["17%", "65%"],
+                "radius": "60%",
+                "axisLine": {"lineStyle": {"width": 16, "color": [
+                    [0.25, green], [0.75, gray], [0.95, amber], [1, red],
+                ]}},
+                "detail": {
+                    "fontSize": 18,
+                    "color": _DARK["text"],
+                    "fontFamily": "Inter, sans-serif",
+                    "fontWeight": "bold",
+                    "offsetCenter": [0, "25%"],
+                    "formatter": f"{cta_val}th pct",
+                },
+                "title": {
+                    "fontSize": 12,
+                    "color": _DARK["muted"],
+                    "offsetCenter": [0, "48%"],
+                },
+                "data": [{"value": cta_val, "name": "Trend Followers"}],
+            },
+            {
+                **gauge_common,
+                "type": "gauge",
+                "center": ["50%", "65%"],
+                "radius": "60%",
+                "axisLine": {"lineStyle": {"width": 16, "color": [
+                    [0.30, red], [0.50, gray], [1, green],
+                ]}},
+                "detail": {
+                    "fontSize": 18,
+                    "color": _DARK["text"],
+                    "fontFamily": "Inter, sans-serif",
+                    "fontWeight": "bold",
+                    "offsetCenter": [0, "25%"],
+                    "formatter": gamma_text.capitalize(),
+                },
+                "title": {
+                    "fontSize": 12,
+                    "color": _DARK["muted"],
+                    "offsetCenter": [0, "48%"],
+                },
+                "data": [{"value": gamma_val, "name": "Options Dealer Hedging"}],
+            },
+            {
+                **gauge_common,
+                "type": "gauge",
+                "center": ["83%", "65%"],
+                "radius": "60%",
+                "axisLine": {"lineStyle": {"width": 16, "color": [
+                    [0.30, red], [0.65, gray], [0.90, amber], [1, red],
+                ]}},
+                "detail": {
+                    "fontSize": 18,
+                    "color": _DARK["text"],
+                    "fontFamily": "Inter, sans-serif",
+                    "fontWeight": "bold",
+                    "offsetCenter": [0, "25%"],
+                    "formatter": vol_text.capitalize(),
+                },
+                "title": {
+                    "fontSize": 12,
+                    "color": _DARK["muted"],
+                    "offsetCenter": [0, "48%"],
+                },
+                "data": [{"value": vol_val, "name": "Volatility-Based Funds"}],
+            },
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
 
-def render_sidebar() -> dict:
+def render_sidebar(theme_mode: str) -> dict:
     """Render sidebar controls and return a settings dict."""
+    with st.sidebar:
+        nav_utils.render_toc(theme_mode)
+    st.sidebar.markdown("---")
+
     st.sidebar.title("Controls")
 
     lookback_label = st.sidebar.radio(
@@ -1086,7 +1409,7 @@ def get_latest_analysis(report_type: str) -> str | None:
     return matches[0].read_text()
 
 
-def render_analysis_tab():
+def render_analysis_tab(*, theme_mode: str = "dark"):
     """Render the Analysis tab — shows the latest macro report."""
     content = get_latest_analysis("macro")
     if content:
@@ -1096,6 +1419,10 @@ def render_analysis_tab():
             "No macro report yet. Run `/analyze-macro` in Claude Code "
             "to generate your first monthly report."
         )
+    st.html(
+        nav_utils.build_tab_arrows_html(1, 2, ["Signal", "Analysis"], theme_mode),
+        unsafe_allow_javascript=True,
+    )
 
 
 def render_rotation_tab(prices: pd.DataFrame):
@@ -1209,7 +1536,7 @@ def render_rotation_tab(prices: pd.DataFrame):
         )
 
 
-def render_dashboard_tab(settings: dict, prices: pd.DataFrame):
+def render_dashboard_tab(settings: dict, prices: pd.DataFrame, *, theme_mode: str = "dark"):
     """Render the Dashboard tab — all charts and data."""
     if prices.empty:
         st.warning(NO_DATA_MSG)
@@ -1348,10 +1675,130 @@ def render_dashboard_tab(settings: dict, prices: pd.DataFrame):
         f"Mkt Cap: {MACRO_ANCHORS['mcap_source']}"
     )
 
+    # --- Section E: AI Capex Loop (seasonal) ----------------------------------
+    ctx_mag7 = load_context("mag7-circular-revenue")
+    if ctx_mag7:
+        st.header("The AI Capex Loop")
+        st.caption(
+            f"🔄 *{ctx_mag7['context_type']}* · Data as of {ctx_mag7['data_as_of']} · "
+            f"Refreshed every ~{ctx_mag7['freshness_days']} days."
+        )
+        _d = ctx_mag7["data"]
+        _n_buyers = len(_d.get("capex_by_company", {}))
+        st.caption(
+            f"Tracks how ${_d['hyperscaler_ai_capex_annual_bn']:.0f}B/yr in hyperscaler AI capex "
+            f"circulates within the Mag 7. NVDA receives {_d['nvidia_dc_rev_hyperscaler_pct']:.0f}% "
+            f"of its datacenter revenue from {_n_buyers} hyperscaler buyers. "
+            "Revenue that arrives as a peer's capex is not new end-user demand."
+        )
+
+        with st.container(border=True):
+            render_echart_inview(
+                build_sankey_echart(ctx_mag7),
+                key="context-sankey-mag7",
+                height=400,
+                threshold=0.2,
+                alt="Sankey diagram showing circular AI capex flows between Mag 7 members.",
+            )
+
+        d = ctx_mag7["data"]
+        intercompany_bn = round(d["mag7_total_rev_ttm_bn"] * d["mag7_intercompany_rev_pct"] / 100)
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Revenue Between Members", f"~${intercompany_bn}B/yr")
+        c1.caption(f"{d['mag7_intercompany_rev_pct']}% of Mag 7 combined revenue")
+        c2.metric("Hyperscaler AI Capex", f"${d['hyperscaler_ai_capex_annual_bn']:.0f}B/yr")
+        c2.caption(f"{len(d.get('capex_by_company', {}))} companies spending on AI infrastructure")
+        c3.metric("NVDA Revenue from Buyers", f"{d['nvidia_dc_rev_hyperscaler_pct']:.0f}%")
+        c3.caption("of NVIDIA datacenter revenue from these same hyperscalers")
+
+        st.caption(
+            f"Sources: {', '.join(ctx_mag7['sources'][:3])}."
+        )
+
+    # --- Section F: Physical vs Financial Weight (structural) ------------------
+    ctx_physical = load_context("physical-anchors")
+    if ctx_physical:
+        st.header("Physical vs Financial Weight")
+        st.caption(
+            f"⚓ *{ctx_physical['context_type']}* · Data as of {ctx_physical['data_as_of']} · "
+            f"Refreshed every ~{ctx_physical['freshness_days']} days."
+        )
+        st.caption(
+            "Compares each region's share of physical economic output (energy consumption, "
+            "manufacturing) against its share of global equity market capitalization. "
+            "A large asymmetry between physical and financial weight indicates financialization "
+            "premium or discount — capital pricing beyond real-world output."
+        )
+
+        with st.container(border=True):
+            render_echart_inview(
+                build_butterfly_echart(ctx_physical["data"], MACRO_ANCHORS["regions"]),
+                key="context-butterfly-physical",
+                height=340,
+                threshold=0.2,
+                alt="Butterfly chart comparing physical economy share vs market cap weight.",
+            )
+
+        us_energy = ctx_physical["data"]["us_energy_pct"]
+        us_mfg = ctx_physical["data"]["us_manufacturing_pct"]
+        cn_energy = ctx_physical["data"]["china_energy_pct"]
+        cn_mfg = ctx_physical["data"]["china_manufacturing_pct"]
+        us_mcap = next((r["mcap_pct"] for r in MACRO_ANCHORS["regions"] if r["label"] == "US"), 0)
+        cn_mcap = next((r["mcap_pct"] for r in MACRO_ANCHORS["regions"] if r["label"] == "China"), 0)
+
+        st.markdown(
+            f"| | Energy | Manufacturing | Market Cap | Financial / Physical |\n"
+            f"|---|---|---|---|---|\n"
+            f"| **US** | {us_energy}% | {us_mfg}% | {us_mcap}% | ~{us_mcap / ((us_energy + us_mfg) / 2):.0f}x |\n"
+            f"| **China** | {cn_energy}% | {cn_mfg}% | {cn_mcap}% | ~{cn_mcap / ((cn_energy + cn_mfg) / 2):.1f}x |\n"
+            f"| **Ratio** | | | **~{(us_mcap / ((us_energy + us_mfg) / 2)) / (cn_mcap / ((cn_energy + cn_mfg) / 2)):.0f}:1** | |"
+        )
+
+        st.caption(
+            f"Sources: {', '.join(ctx_physical['sources'])}. "
+            f"Energy data: {ctx_physical['data']['data_year_energy']}. "
+            f"Manufacturing data: {ctx_physical['data']['data_year_manufacturing']}."
+        )
+
+    # --- Section G: Systematic Positioning (tactical) -------------------------
+    ctx_positioning = load_context("systematic-positioning")
+    if ctx_positioning:
+        st.header("Systematic Positioning")
+        st.caption(
+            f"🎯 *{ctx_positioning['context_type']}* · Data as of {ctx_positioning['data_as_of']} · "
+            f"Refreshed every ~{ctx_positioning['freshness_days']} days."
+        )
+        st.caption(
+            "Three autopilot strategies that collectively move billions — trend-followers, "
+            "options dealers, and volatility-based allocators — are all betting the same "
+            "direction: long US stocks. None of them care about valuation. They react to "
+            "price momentum, volatility, and capital flows."
+        )
+
+        with st.container(border=True):
+            render_echart_inview(
+                build_gauges_echart(ctx_positioning),
+                key="context-gauges-positioning",
+                height=280,
+                threshold=0.2,
+                alt="Triple gauge showing CTA positioning, dealer gamma, and vol-target allocation.",
+            )
+
+        st.caption(
+            f"{ctx_positioning['data']['notes']}"
+        )
+        st.caption(
+            f"Sources: {', '.join(ctx_positioning['sources'])}."
+        )
+
+    st.html(
+        nav_utils.build_tab_arrows_html(0, 2, ["Signal", "Analysis"], theme_mode),
+        unsafe_allow_javascript=True,
+    )
 
 
 def main():
-    settings = render_sidebar()
+    settings = render_sidebar(_THEME_MODE)
 
     st.title("Capital Structure Decoder")
     st.caption(
@@ -1375,10 +1822,10 @@ def main():
     tab_dashboard, tab_analysis = st.tabs(["Signal", "Analysis"])
 
     with tab_dashboard:
-        render_dashboard_tab(settings, prices)
+        render_dashboard_tab(settings, prices, theme_mode=_THEME_MODE)
 
     with tab_analysis:
-        render_analysis_tab()
+        render_analysis_tab(theme_mode=_THEME_MODE)
 
 
 

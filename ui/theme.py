@@ -391,6 +391,12 @@ section[data-testid="stSidebar"] div[data-testid="stMarkdown"] h4 {{
     color: {css_theme["sidebar_muted"]} !important;
 }}
 
+section[data-testid="stSidebar"] h1[data-testid="stHeading"] {{
+    margin-top: 0.35rem !important;
+    margin-bottom: 0.55rem !important;
+    padding-top: 0 !important;
+}}
+
 section[data-testid="stSidebar"] div[data-testid="stCaptionContainer"] p {{
     color: {css_theme["sidebar_caption"]} !important;
 }}
