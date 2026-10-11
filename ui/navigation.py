@@ -16,519 +16,239 @@ _TOC_COMPONENT = st.components.v2.component(
 </div>
 <style>
   [data-role="toc-shell"] {
-    border-radius: 0.7rem;
-    padding: 0.7rem 0.75rem;
-    background: var(--toc-bg);
+    padding: 0.5rem 0.25rem;
   }
-
   [data-role="toc-title"] {
-    color: var(--toc-title);
+    color: var(--toc-muted);
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
   }
-
   [data-role="toc-nav"] {
     display: flex;
     flex-direction: column;
-    gap: 0.18rem;
-    max-height: none;
-    overflow-y: visible;
+    gap: 0.1rem;
   }
-
-  [data-role="toc-link"] {
+  .mq-toc-link {
+    display: block;
     border-left: 2px solid transparent;
     color: var(--toc-text);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     line-height: 1.35;
-    opacity: 0.88;
     text-decoration: none;
-    padding: 0.26rem 0.5rem;
-    border-radius: 0.35rem;
-    transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease, opacity 150ms ease;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.3rem;
+    cursor: pointer;
+    transition: border-color 150ms, color 150ms, background 150ms;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-
-  [data-role="toc-link"]:hover {
-    opacity: 1;
+  .mq-toc-link:hover {
     color: var(--toc-strong);
     background: var(--toc-hover-bg);
   }
-
-  [data-role="toc-link"][data-active="true"] {
-    opacity: 1;
+  .mq-toc-link[data-active="true"] {
     color: var(--toc-strong);
     border-left-color: var(--toc-accent);
     background: var(--toc-active-bg);
   }
-
-  [data-role="toc-note"] {
+  .mq-toc-empty {
     color: var(--toc-muted);
     font-size: 0.78rem;
-    padding: 0.2rem 0;
+    padding: 0.2rem 0.5rem;
+    font-style: italic;
   }
 </style>
 """,
     js="""
 const instances =
-  window.__miniQuantSidebarTocInstances ||
-  (window.__miniQuantSidebarTocInstances = new WeakMap());
+  window.__mqTocInstances || (window.__mqTocInstances = new WeakMap());
 
 function slugify(text) {
-  return text
-    .toLowerCase()
+  return "toc-" + text.toLowerCase()
     .replace(/[^a-z0-9\\s-]/g, "")
     .trim()
     .replace(/\\s+/g, "-")
     .replace(/-+/g, "-");
 }
 
-function getRootContext() {
-  let rootWin = window;
-  let rootDoc = document;
-
-  try {
-    if (window.parent && window.parent !== window && window.parent.document) {
-      rootWin = window.parent;
-      rootDoc = window.parent.document;
-    }
-  } catch (_err) {
-    // Fallback to local document when parent is not accessible.
-  }
-
-  return { rootWin, rootDoc };
-}
-
-function queryAllDeep(root, selector) {
-  const out = [];
-
-  const walk = (node) => {
-    if (!node) return;
-
-    if (node.nodeType === Node.ELEMENT_NODE && node.matches && node.matches(selector)) {
-      out.push(node);
-    }
-
-    const shadowRoot = node.shadowRoot || null;
-    if (shadowRoot) {
-      walk(shadowRoot);
-    }
-
-    const children = node.children || [];
-    for (const child of children) {
-      walk(child);
-    }
-  };
-
-  walk(root);
-  return out;
-}
-
-function queryOneDeep(root, selector) {
-  const matches = queryAllDeep(root, selector);
-  return matches.length ? matches[0] : null;
-}
-
-function findByIdDeep(root, id) {
-  if (!id) return null;
-  const stack = [root];
-
-  while (stack.length) {
-    const node = stack.pop();
-    if (!node) continue;
-
-    if (node.nodeType === Node.ELEMENT_NODE && node.id === id) {
-      return node;
-    }
-
-    if (node.shadowRoot) {
-      stack.push(node.shadowRoot);
-    }
-
-    const children = node.children || [];
-    for (let i = children.length - 1; i >= 0; i -= 1) {
-      stack.push(children[i]);
-    }
-  }
-
-  return null;
-}
-
-function findActivePanel(rootDoc) {
-  const tabs = queryAllDeep(rootDoc, '[role="tab"]');
-  const activeTab = tabs.find((tab) => tab.getAttribute("aria-selected") === "true");
-  const panels = queryAllDeep(rootDoc, '[role="tabpanel"]');
-
-  if (!activeTab) {
-    if (panels.length === 1) return panels[0];
-    return panels.find((panel) => panel.getAttribute("aria-hidden") !== "true") || null;
-  }
-
-  const controlledPanelId = activeTab.getAttribute("aria-controls");
-  if (controlledPanelId) {
-    const controlledPanel = findByIdDeep(rootDoc, controlledPanelId);
-    if (controlledPanel && controlledPanel.getAttribute("role") === "tabpanel") {
-      return controlledPanel;
-    }
-  }
-
-  if (panels.length === 1) {
-    return panels[0];
-  }
-
-  const activeIndex = tabs.indexOf(activeTab);
-  if (activeIndex < 0) return null;
-  return panels[activeIndex] || panels.find((panel) => panel.getAttribute("aria-hidden") !== "true") || null;
-}
-
-function isElementVisible(element, rootWin) {
-  if (!element) return false;
-  if (element.closest('[aria-hidden="true"]')) return false;
-
-  const style = rootWin.getComputedStyle(element);
-  if (style.display === "none" || style.visibility === "hidden") return false;
-
-  const rect = element.getBoundingClientRect();
-  return rect.width > 0 && rect.height > 0;
-}
-
-function isInsideClosedExpander(element) {
-  const expander = element.closest('[data-testid="stExpander"]');
-  if (!expander) return false;
-
-  const details = expander.matches('details') ? expander : expander.querySelector('details');
-  if (!details) return false;
-  return details.open === false;
-}
-
-function setThemeVars(shell, data) {
-  const palette = {
-    tocBg: "transparent",
-    tocTitle: "#94A3B8",
-    tocText: "#B5C4D9",
-    tocStrong: "#E2E8F0",
-    tocMuted: "#94A3B8",
-    tocAccent: "#38BDF8",
-    tocDivider: "rgba(255,255,255,0.08)",
-    tocHoverBg: "rgba(56, 189, 248, 0.08)",
-    tocActiveBg: "rgba(56, 189, 248, 0.12)",
-    ...(data || {}),
-  };
-
-  shell.style.setProperty("--toc-bg", palette.tocBg);
-  shell.style.setProperty("--toc-title", palette.tocTitle);
-  shell.style.setProperty("--toc-text", palette.tocText);
-  shell.style.setProperty("--toc-strong", palette.tocStrong);
-  shell.style.setProperty("--toc-muted", palette.tocMuted);
-  shell.style.setProperty("--toc-accent", palette.tocAccent);
-  shell.style.setProperty("--toc-divider", palette.tocDivider);
-  shell.style.setProperty("--toc-hover-bg", palette.tocHoverBg);
-  shell.style.setProperty("--toc-active-bg", palette.tocActiveBg);
-}
-
-export default function(component) {
+export default function (component) {
   const { parentElement, data } = component;
   if (!parentElement) return;
-  const { rootWin, rootDoc } = getRootContext();
 
   const shell = parentElement.querySelector('[data-role="toc-shell"]');
   const nav = parentElement.querySelector('[data-role="toc-nav"]');
   if (!shell || !nav) return;
 
-  setThemeVars(shell, data);
+  // Apply theme CSS variables
+  const vars = {
+    "--toc-muted": data?.tocMuted || "#94A3B8",
+    "--toc-text": data?.tocText || "#B5C4D9",
+    "--toc-strong": data?.tocStrong || "#E2E8F0",
+    "--toc-accent": data?.tocAccent || "#38BDF8",
+    "--toc-hover-bg": data?.tocHoverBg || "rgba(56,189,248,0.08)",
+    "--toc-active-bg": data?.tocActiveBg || "rgba(56,189,248,0.12)",
+  };
+  for (const [k, v] of Object.entries(vars)) shell.style.setProperty(k, v);
+
+  // Force the component's host containers to auto-size
+  let el = parentElement;
+  for (let i = 0; i < 6 && el; i++) {
+    if (el.style) {
+      el.style.height = "auto";
+      el.style.overflow = "visible";
+    }
+    // Stop at the sidebar boundary
+    if (el.getAttribute && el.getAttribute("data-testid") === "stSidebar") break;
+    el = el.parentElement;
+  }
 
   let state = instances.get(parentElement);
   if (!state) {
-    state = {
-      cleanup: null,
-      activeId: null,
-      linksById: new Map(),
-      headings: [],
-      visibleHeadingTops: new Map(),
-    };
+    state = { cleanup: null, activeId: null };
     instances.set(parentElement, state);
   }
-
   if (state.cleanup) state.cleanup();
 
   const teardowns = [];
   state.activeId = null;
-  state.linksById.clear();
-  state.headings = [];
-  state.visibleHeadingTops.clear();
+
+  function getActivePanel() {
+    const tabs = document.querySelectorAll('button[role="tab"]');
+    let idx = -1;
+    tabs.forEach((t, i) => {
+      if (t.getAttribute("aria-selected") === "true") idx = i;
+    });
+    if (idx < 0) idx = 0;
+    const panels = document.querySelectorAll('div[role="tabpanel"]');
+    return panels[idx] || null;
+  }
 
   function setActive(id) {
-    if (!id || state.activeId === id) return;
+    if (state.activeId === id) return;
     state.activeId = id;
-    state.linksById.forEach((link, linkId) => {
-      if (linkId === id) {
-        link.setAttribute("data-active", "true");
-      } else {
-        link.removeAttribute("data-active");
-      }
+    nav.querySelectorAll(".mq-toc-link").forEach(link => {
+      link.setAttribute("data-active", link.dataset.targetId === id ? "true" : "false");
     });
   }
 
-  function pickActiveByViewport() {
-    if (!state.headings.length) return;
-    const threshold = rootWin.innerHeight * 0.2;
-    let candidate = null;
-
-    for (const heading of state.headings) {
-      const top = heading.getBoundingClientRect().top;
-      if (top <= threshold) {
-        candidate = heading;
-      }
-    }
-
-    if (!candidate) {
-      candidate = state.headings.find((heading) => heading.getBoundingClientRect().top > 0);
-    }
-
-    if (!candidate) {
-      candidate = state.headings[state.headings.length - 1];
-    }
-
-    if (candidate && candidate.id) {
-      setActive(candidate.id);
-    }
-  }
-
-  function ensureHeadingId(heading, usedIds) {
-    const existing = (heading.id || "").trim();
-    if (existing) {
-      usedIds.add(existing);
-      return existing;
-    }
-
-    const text = (heading.textContent || "").trim();
-    const base = `toc-${slugify(text) || "section"}`;
-    let unique = base;
-    let count = 2;
-    while (usedIds.has(unique) || (rootDoc.getElementById(unique) && rootDoc.getElementById(unique) !== heading)) {
-      unique = `${base}-${count}`;
-      count += 1;
-    }
-
-    heading.id = unique;
-    usedIds.add(unique);
-    return unique;
-  }
-
-  function rebuildToc() {
+  function buildTOC() {
     nav.innerHTML = "";
-    state.linksById.clear();
-    state.headings = [];
-    state.visibleHeadingTops.clear();
     state.activeId = null;
 
-    const panel = findActivePanel(rootDoc);
-
-    let headings = [];
-
-    if (panel) {
-      headings = queryAllDeep(panel, "h2").filter((heading) => {
-        return (
-          Boolean((heading.textContent || "").trim())
-          && isElementVisible(heading, rootWin)
-          && !isInsideClosedExpander(heading)
-          && !shell.contains(heading)
-        );
-      });
+    const panel = getActivePanel();
+    if (!panel) {
+      nav.innerHTML = '<div class="mq-toc-empty">Loading…</div>';
+      return;
     }
 
-    // Sidebar renders before tab content, so fallback to visible main headings
-    // while the active panel is not yet fully mounted.
-    if (!headings.length) {
-      const mainRoot = queryOneDeep(rootDoc, '[data-testid="stMain"]');
-      if (mainRoot) {
-        headings = queryAllDeep(mainRoot, "h2").filter((heading) => {
-          return (
-            Boolean((heading.textContent || "").trim())
-            && isElementVisible(heading, rootWin)
-            && !isInsideClosedExpander(heading)
-            && !shell.contains(heading)
-          );
-        });
+    const headings = Array.from(panel.querySelectorAll("h2")).filter(h => {
+      const text = (h.textContent || "").trim();
+      if (!text) return false;
+      // Skip headings inside closed expanders
+      const expander = h.closest("[data-testid='stExpander']");
+      if (expander) {
+        const details = expander.matches("details") ? expander : expander.querySelector("details");
+        if (details && !details.open) return false;
       }
-    }
+      return true;
+    });
 
     if (!headings.length) {
-      const note = nav.ownerDocument.createElement("div");
-      note.setAttribute("data-role", "toc-note");
-      note.textContent = "No headings available on this tab.";
-      nav.appendChild(note);
+      nav.innerHTML = '<div class="mq-toc-empty">No sections on this tab.</div>';
       return;
     }
 
     const usedIds = new Set();
-    headings.forEach((heading) => {
-      const id = ensureHeadingId(heading, usedIds);
-      const text = (heading.textContent || "").trim();
-      const link = nav.ownerDocument.createElement("a");
-      link.href = `#${id}`;
+    const fragment = document.createDocumentFragment();
+
+    headings.forEach(h => {
+      const text = (h.textContent || "").trim();
+      let id = h.id || slugify(text);
+      while (usedIds.has(id)) id += "-2";
+      usedIds.add(id);
+      if (!h.id) h.id = id;
+
+      const link = document.createElement("a");
+      link.className = "mq-toc-link";
       link.textContent = text;
-      link.setAttribute("data-role", "toc-link");
-      link.setAttribute("data-target-id", id);
-
-      const onClick = (event) => {
-        event.preventDefault();
-        heading.scrollIntoView({ behavior: "smooth", block: "start" });
-      };
-
-      link.addEventListener("click", onClick);
-      teardowns.push(() => link.removeEventListener("click", onClick));
-
-      nav.appendChild(link);
-      state.linksById.set(id, link);
-    });
-
-    state.headings = headings;
-
-    if (rootWin.IntersectionObserver) {
-      const observer = new rootWin.IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const id = entry.target.id;
-            if (!id) return;
-            if (entry.isIntersecting) {
-              state.visibleHeadingTops.set(id, entry.boundingClientRect.top);
-            } else {
-              state.visibleHeadingTops.delete(id);
-            }
-          });
-
-          if (state.visibleHeadingTops.size > 0) {
-            let winnerId = null;
-            let smallestDistance = Number.POSITIVE_INFINITY;
-            state.visibleHeadingTops.forEach((top, id) => {
-              const distance = Math.abs(top);
-              if (distance < smallestDistance) {
-                smallestDistance = distance;
-                winnerId = id;
-              }
-            });
-            if (winnerId) setActive(winnerId);
-          } else {
-            pickActiveByViewport();
-          }
-        },
-        { root: null, rootMargin: "-10% 0px -80% 0px", threshold: [0, 1] }
-      );
-
-      headings.forEach((heading) => observer.observe(heading));
-      teardowns.push(() => observer.disconnect());
-    }
-
-    let pendingFrame = null;
-    const onScroll = () => {
-      if (pendingFrame !== null) return;
-      pendingFrame = rootWin.requestAnimationFrame(() => {
-        pendingFrame = null;
-        if (state.visibleHeadingTops.size === 0) {
-          pickActiveByViewport();
-        }
+      link.title = text;
+      link.dataset.targetId = id;
+      link.href = "#" + id;
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        h.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => setActive(id), 350);
       });
+      fragment.appendChild(link);
+    });
+
+    nav.appendChild(fragment);
+
+    // Scroll-spy via IntersectionObserver
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && entry.target.id) {
+          setActive(entry.target.id);
+          break;
+        }
+      }
+    }, { rootMargin: "-5% 0px -85% 0px", threshold: 0 });
+
+    headings.forEach(h => observer.observe(h));
+    teardowns.push(() => observer.disconnect());
+
+    // Fallback: pick the nearest heading on scroll
+    const onScroll = () => {
+      const threshold = window.innerHeight * 0.25;
+      let best = null;
+      for (const h of headings) {
+        if (h.getBoundingClientRect().top <= threshold) best = h;
+      }
+      if (!best) best = headings.find(h => h.getBoundingClientRect().top > 0) || headings[0];
+      if (best && best.id) setActive(best.id);
     };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    teardowns.push(() => window.removeEventListener("scroll", onScroll));
 
-    rootWin.addEventListener("scroll", onScroll, { passive: true });
-    teardowns.push(() => {
-      rootWin.removeEventListener("scroll", onScroll);
-      if (pendingFrame !== null) {
-        rootWin.cancelAnimationFrame(pendingFrame);
-      }
-    });
-
-    pickActiveByViewport();
+    // Set initial active
+    onScroll();
   }
 
-  let scheduledRebuild = null;
-  const scheduleRebuild = () => {
-    if (scheduledRebuild !== null) return;
-    scheduledRebuild = rootWin.setTimeout(() => {
-      scheduledRebuild = null;
-      rebuildToc();
-    }, 20);
-  };
+  // Debounced rebuild
+  let rebuildTimer = null;
+  function scheduleRebuild() {
+    if (rebuildTimer) clearTimeout(rebuildTimer);
+    rebuildTimer = setTimeout(() => { rebuildTimer = null; buildTOC(); }, 60);
+  }
 
-  rebuildToc();
-  scheduleRebuild();
+  // Build immediately
+  buildTOC();
 
-  const tablist = queryOneDeep(rootDoc, '[role="tablist"]');
+  // Watch for tab switches
+  const tablist = document.querySelector('[role="tablist"]');
   if (tablist) {
-    const tabObserver = new rootWin.MutationObserver((mutations) => {
-      if (mutations.some((mutation) => mutation.attributeName === "aria-selected")) {
-        scheduleRebuild();
-      }
-    });
-
-    tabObserver.observe(tablist, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ["aria-selected"],
-    });
-
-    teardowns.push(() => tabObserver.disconnect());
-
-    const tabButtons = queryAllDeep(tablist, '[role="tab"]');
-    tabButtons.forEach((tabButton) => {
-      const onClick = () => {
-        scheduleRebuild();
-      };
-      tabButton.addEventListener("click", onClick);
-      teardowns.push(() => tabButton.removeEventListener("click", onClick));
-    });
+    const tabObs = new MutationObserver(scheduleRebuild);
+    tabObs.observe(tablist, { attributes: true, subtree: true, attributeFilter: ["aria-selected"] });
+    teardowns.push(() => tabObs.disconnect());
   }
 
-  const mainRoot = queryOneDeep(rootDoc, '[data-testid="stMain"]');
-  if (mainRoot) {
-    const contentObserver = new rootWin.MutationObserver(() => {
-      scheduleRebuild();
-    });
-    contentObserver.observe(mainRoot, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["style", "class", "hidden", "aria-hidden"],
-    });
-    teardowns.push(() => contentObserver.disconnect());
+  // Watch for content changes in the main area (new headings appearing)
+  const main = document.querySelector('[data-testid="stMain"]');
+  if (main) {
+    const mainObs = new MutationObserver(scheduleRebuild);
+    mainObs.observe(main, { childList: true, subtree: true });
+    teardowns.push(() => mainObs.disconnect());
   }
 
-  let lastActiveTabKey = null;
-  const syncActiveTab = () => {
-    const tabs = queryAllDeep(rootDoc, '[role="tab"]');
-    const activeTab = tabs.find((tab) => tab.getAttribute("aria-selected") === "true") || null;
-    const nextKey = activeTab
-      ? `${activeTab.getAttribute("id") || ""}|${(activeTab.textContent || "").trim()}`
-      : "";
-
-    if (nextKey !== lastActiveTabKey) {
-      lastActiveTabKey = nextKey;
-      scheduleRebuild();
-    }
-  };
-
-  syncActiveTab();
-  const tabSyncTimer = rootWin.setInterval(syncActiveTab, 220);
-  teardowns.push(() => rootWin.clearInterval(tabSyncTimer));
-
+  // Cleanup
   state.cleanup = () => {
-    while (teardowns.length) {
-      const teardown = teardowns.pop();
-      try {
-        teardown();
-      } catch (_err) {
-        // Keep teardown best-effort to avoid rerun crashes.
-      }
-    }
-    state.linksById.clear();
-    state.headings = [];
-    state.visibleHeadingTops.clear();
-    if (scheduledRebuild !== null) {
-      rootWin.clearTimeout(scheduledRebuild);
-      scheduledRebuild = null;
-    }
+    while (teardowns.length) { try { teardowns.pop()(); } catch (_) {} }
+    if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null; }
   };
 
   return () => {
@@ -546,40 +266,18 @@ def render_toc(theme_mode: str) -> None:
     css_theme = _css_theme(mode)
     palette = get_active_palette(mode)
 
-    # Streamlit's component host can keep a stale fixed height; force auto sizing.
-    st.html(
-        """
-<style>
-  [data-testid="stElementContainer"].st-key-mini-quant-sidebar-toc,
-  [data-testid="stElementContainer"].st-key-mini-quant-sidebar-toc .stBidiComponent,
-  [data-testid="stElementContainer"].st-key-mini-quant-sidebar-toc [data-testid="stBidiComponentIsolated"] {
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-  }
-
-  [data-testid="stElementContainer"].st-key-mini-quant-sidebar-toc [data-testid="stBidiComponentIsolated"] {
-    overflow: visible !important;
-  }
-</style>
-"""
-    )
-
     _TOC_COMPONENT(
         key="mini-quant-sidebar-toc",
         data={
-            "tocBg": "transparent",
-            "tocTitle": css_theme["sidebar_muted"],
+            "tocMuted": css_theme["sidebar_muted"],
             "tocText": css_theme["sidebar_caption"],
             "tocStrong": css_theme["body_strong"],
-            "tocMuted": css_theme["sidebar_muted"],
             "tocAccent": palette["accent"],
-            "tocDivider": css_theme["sidebar_divider"],
             "tocHoverBg": css_theme["sidebar_radio_bg"],
             "tocActiveBg": palette["accent_fill"],
         },
         width="stretch",
-        height="content",
+        height=350,
     )
 
 
@@ -613,7 +311,6 @@ def build_tab_arrows_html(
     return f"""
 <div
   data-role="mini-quant-tab-arrows"
-  data-current-index="{tab_index}"
   style="--arrow-border:{css_theme['card_border']};--arrow-bg:{css_theme['card_bg']};--arrow-hover:{css_theme['sidebar_radio_bg']};--arrow-text:{css_theme['body_strong']};--arrow-accent:{palette['accent']};"
 >
   <button type="button" data-target-index="{prev_index}" style="visibility:{prev_visibility};">&#8592; Prev: {prev_label}</button>
@@ -623,55 +320,18 @@ def build_tab_arrows_html(
 (() => {{
   const root = document.currentScript && document.currentScript.previousElementSibling;
   if (!root) return;
+  const top = window.parent || window;
+  const topDoc = top.document;
 
-  let rootWin = window;
-  let rootDoc = document;
-  try {{
-    if (window.parent && window.parent !== window && window.parent.document) {{
-      rootWin = window.parent;
-      rootDoc = window.parent.document;
-    }}
-  }} catch (_err) {{
-    rootWin = window;
-    rootDoc = document;
-  }}
-
-  const queryAllDeep = (start, selector) => {{
-    const out = [];
-    const walk = (node) => {{
-      if (!node) return;
-      if (node.nodeType === Node.ELEMENT_NODE && node.matches && node.matches(selector)) {{
-        out.push(node);
-      }}
-      if (node.shadowRoot) walk(node.shadowRoot);
-      const children = node.children || [];
-      for (const child of children) walk(child);
-    }};
-    walk(start);
-    return out;
-  }};
-
-  const scrollToTop = () => {{
-    const main = queryAllDeep(rootDoc, '[data-testid="stMain"]')[0] || null;
-    if (main && typeof main.scrollTo === "function") {{
-      main.scrollTo({{ top: 0, behavior: "smooth" }});
-      return;
-    }}
-    rootWin.scrollTo({{ top: 0, behavior: "smooth" }});
-  }};
-
-  root.querySelectorAll('button[data-target-index]').forEach((button) => {{
+  root.querySelectorAll('button[data-target-index]').forEach(button => {{
     button.onclick = () => {{
-      const targetIndex = Number(button.getAttribute("data-target-index"));
-      if (!Number.isFinite(targetIndex)) return;
-      if (targetIndex < 0) return;
-
-      const tabs = queryAllDeep(rootDoc, '[role="tab"]');
-      const targetTab = tabs[targetIndex];
-      if (!targetTab) return;
-
-      targetTab.click();
-      scrollToTop();
+      const idx = Number(button.getAttribute('data-target-index'));
+      if (!Number.isFinite(idx) || idx < 0) return;
+      const tabs = topDoc.querySelectorAll('button[role="tab"]');
+      if (tabs[idx]) {{
+        tabs[idx].click();
+        top.scrollTo({{ top: 0, behavior: 'smooth' }});
+      }}
     }};
   }});
 }})();
@@ -685,7 +345,6 @@ def build_tab_arrows_html(
     margin-top: 1rem;
     padding-top: 0.35rem;
   }}
-
   [data-role="mini-quant-tab-arrows"] > button {{
     border: 1px solid var(--arrow-border);
     background: var(--arrow-bg);
@@ -696,27 +355,23 @@ def build_tab_arrows_html(
     font-weight: 600;
     padding: 0.55rem 0.82rem;
     cursor: pointer;
-    transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+    transition: transform 140ms, border-color 140ms, background-color 140ms, color 140ms;
     min-width: 9rem;
     text-align: center;
   }}
-
   [data-role="mini-quant-tab-arrows"] > button:hover {{
     transform: translateY(-1px);
     border-color: var(--arrow-accent);
     background: var(--arrow-hover);
   }}
-
   [data-role="mini-quant-tab-arrows"] > button:active {{
     transform: translateY(0);
   }}
-
   @media (max-width: 720px) {{
     [data-role="mini-quant-tab-arrows"] {{
       flex-direction: column;
       align-items: stretch;
     }}
-
     [data-role="mini-quant-tab-arrows"] > button {{
       width: 100%;
     }}

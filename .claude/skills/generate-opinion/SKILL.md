@@ -28,6 +28,8 @@ Reads the latest macro report and distills it into a tight, jargon-free opinion 
 
 4. Write to `analysis/YYYY-MM-opinion.md` (same YYYY-MM as the macro report).
 
+5. Run the `humanizer` skill in file mode on the opinion file you just wrote. Preserve all chart directives (`<!-- chart:... -->`), bold signal numbers, and the template section structure.
+
 ## Available Chart Embed Directives
 
 Place these HTML comments in the opinion markdown. The Opinion tab in the Streamlit app renders them as real interactive charts from the Signal tab.
