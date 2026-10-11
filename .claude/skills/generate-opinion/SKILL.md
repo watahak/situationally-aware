@@ -9,26 +9,19 @@ description: "Generate a plain-English executive brief from the latest macro ana
 
 Reads the latest macro report and distills it into a tight, jargon-free opinion brief with embedded chart directives. Run this AFTER `/analyze-macro` has completed.
 
-## Analytical Lens (from CLAUDE.md)
-
-| Pillar | How it shapes the opinion |
-|---|---|
-| **Anti-Narrative Skepticism** | Every claim references a mechanical force from the macro report, never a headline or event. |
-| **Mechanical & Structural Awareness** | Explain flows in terms of index rules, passive mechanics, systematic positioning — translated to plain English. |
-| **Physical & Cash-Flow Anchoring** | Ground every valuation statement in FCF yield, GDP gaps, or physical economy data from the macro report. |
-| **Systematic Self-Defense** | Classify extremes clearly as value traps or crowded trades so the reader knows what to avoid. |
-
 ## Steps
 
-1. Find the latest macro report: look for the most recent `analysis/YYYY-MM-macro.md` file. If none exists, tell the user: *"No macro report found. Run `/analyze-macro` first."*
+1. **Load the analytical lens.** Read `references/analytical-lens.md`. Apply the Condensed Lens (Opinion Mode) throughout the opinion brief.
 
-2. Read the macro report.
+2. Find the latest macro report: look for the most recent `analysis/YYYY-MM-macro.md` file. If none exists, tell the user: *"No macro report found. Run `/analyze-macro` first."*
 
-3. Generate the opinion brief following the template and writing rules below. Place chart embed directives where they directly support the narrative — 2-4 charts total, chosen dynamically based on what the macro report highlights as most significant.
+3. Read the macro report.
 
-4. Write to `analysis/YYYY-MM-opinion.md` (same YYYY-MM as the macro report).
+4. Generate the opinion brief following the template and writing rules below. Place chart embed directives where they directly support the narrative — 2-4 charts total, chosen dynamically based on what the macro report highlights as most significant.
 
-5. Run the `humanizer` skill in file mode on the opinion file you just wrote. Preserve all chart directives (`<!-- chart:... -->`), bold signal numbers, and the template section structure.
+5. Write to `analysis/YYYY-MM-opinion.md` (same YYYY-MM as the macro report).
+
+6. Run the `humanizer` skill in file mode on the opinion file you just wrote. Preserve all chart directives (`<!-- chart:... -->`), bold signal numbers, and the template section structure.
 
 ## Available Chart Embed Directives
 

@@ -1,30 +1,51 @@
 # mini-quant
 
-## Role: Pragmatic Macro Quant
+Macro-quant analysis toolkit with Streamlit dashboard. Tracks relative spread ratio pairs, rolling Z-score extremes, and structural capital flow signals.
 
-You are building tools for a Pragmatic Macro Quant — a data-driven market observer who treats financial media narratives as noise and treats institutional mechanics, physical economic anchors, and hard cash flows as signal. Global markets are a complex, engineered ecosystem governed by capital flows, index rules, and systemic reflexivity — not headline narratives.
+## Project structure
 
-## Core Pillars
+```
+app.py                  Streamlit entry point
+core.py                 Shared calculations (ROC, ratio, Z-score, financialization gap)
+settings/market.py      CONFIG: ratio pairs, tickers, Z-score params, macro anchors
+ui/                     Streamlit UI modules (tabs, charts, theme)
+scripts/
+  extract_data.py       Fetches yfinance data, computes metrics, outputs JSON
+  validate_contexts.py  Checks context JSON freshness and schema validity
+analysis/               Monthly output: data JSON, per-pair MDs, macro MD, opinion MD
+prompts/                Markdown queries for human-operated web-connected LLM data retrieval
+contexts/               Structured JSON output of those prompts
+references/             Shared reference documents (analytical lens)
+.claude/skills/         Claude Code skills for analysis and generation
+```
 
-### Anti-Narrative Skepticism
-Headlines and sell-side research are post-hoc rationalizations. A 50% collapse or all-time high is often driven by multiple compression, ERP shifts, passive index weightings, or circular vendor financing — not raw operational success or failure.
+## Setup
 
-### Mechanical & Structural Awareness
-Modern markets are dictated by mechanical rules: systematic VaR triggers, CTA trend-following, options gamma hedging, and passive 401(k) index inflows (e.g., "Mag 7" flywheel). Focus on where structural engines are legally or mathematically forced to dump or pump capital.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-### Physical & Cash-Flow Anchoring
-Unmask financialized price distortions by evaluating against hard, un-fudgeable real-world controls:
-- **FCF Yield** — actual cash generated vs. hope premium
-- **Global Nominal GDP & Export Shares** — physical economic footprint vs. financialization
-- **Energy Consumption & Industrial Output** — raw capacity vs. fiat/valuation inflation
+## Key workflows
 
-### Systematic Self-Defense (Avoiding Retail Traps)
-Not trying to out-frequency HFT or time geopolitical black swans. Use macro tracking to avoid two classic traps:
-- **Value Trap** — standing in front of structural capital flight because a stock looks "cheap" on surface-level P/E
-- **Crowded Trade** — blindly buying top-heavy, cap-weighted passive index bubbles at historical extremes
+- **Monthly analysis:** run `/analyze-macro` — extracts market data, loads contexts, generates per-chart deep dives + macro synthesis report
+- **Executive brief:** run `/generate-opinion` after macro analysis is complete
+- **Context refresh:** paste prompts from `prompts/*.md` into a web-connected LLM (e.g. Gemini), paste structured results into corresponding `contexts/*.json`
+- **Freshness check:** run `scripts/validate_contexts.py` to see which contexts need refreshing
 
-### Agile Tool Builder
-Build lightweight, custom quantitative tools instead of relying on institutional terminals or lagging retail news. Monitor relative spread ratio pairs (SPY/RSP, VT/SPY, GLD/TLT, EWS/EEM), rolling Z-score extremes, and daily ETF holdings changes for situational awareness of global capital tides.
+## Adding a new ratio pair
 
-## Summary Objective
-Transition from passive consumer of market prices to active decoder of market structure — using simple quantitative ratios, real-world controls, and flow tracking to see where global capital is actually moving, why, and how to position alongside structural tides rather than against them.
+1. Add to `CONFIG["ratio_pairs"]` in `settings/market.py` (name, numerator, denominator, tooltip)
+2. Add to `CONFIG["zscore_pairs"]` if Z-score tracking is desired
+3. Add numerator/denominator tickers to the appropriate category list (`us_concentration`, `global_geographic`, `safe_havens`)
+4. Add both tickers to `CONFIG["heatmap_tickers"]`
+
+## Prompts → contexts → analysis pipeline
+
+Each `prompts/*.md` describes a query and its expected JSON schema. The human runs the query externally and pastes structured output into the corresponding `contexts/*.json`. Each context JSON has an envelope with `schema_version`, `context_type`, `data_as_of`, `retrieved_on`, `freshness_days`, `sources`, and `data`. The analyze-macro skill loads these contexts, checks freshness against `freshness_days`, and weaves them into the analysis. The three context types (`structural`, `seasonal`, `tactical`) have different freshness thresholds and presentation rules — see `references/analytical-lens.md` for details.
+
+## Dependencies
+
+Python 3.14. Key packages: streamlit, plotly, yfinance, pandas. Full list in `requirements.txt`.

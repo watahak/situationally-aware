@@ -9,55 +9,36 @@ description: "Monthly macro analysis — generates per-chart deep dives with dyn
 
 One extraction, one LLM pass, all output files generated. This is the monthly publishing skill.
 
-## Analytical Lens (apply throughout — from CLAUDE.md)
-
-Before writing anything, run every data point through these filters:
-
-| Pillar | Action |
-|---|---|
-| **Anti-Narrative Skepticism** | Never explain a ratio movement with a headline or event. Ask: "What mechanical force explains this?" If none is visible in the data, say so honestly — do not fill the gap with speculation. |
-| **Mechanical & Structural Awareness** | Identify the index construction rule or capital flow mechanic that could produce this movement. Think: cap-weighting feedback loops, passive rebalancing, systematic VaR/CTA triggers, options gamma, forced 401(k) inflows. |
-| **Physical & Cash-Flow Anchoring** | Compare price movements to financialization gap data (where available). Ask: "Is this price justified by real economic output, or is it financialization premium?" For concentration pairs, ask: "Is revenue growth anchored in end-user demand, or is it circular vendor financing?" When FCF yield data is available in the JSON (`fundamentals` section), use it to anchor concentration pair assessments — compare the aggregate Mag 7 FCF yield against the QQQ/QQQE concentration premium to test whether price gains are backed by real cash generation. When TIP heatmap data is available, use it to diagnose safe haven behavior: if TLT falls while TIP holds, the move is real-rate driven; if both TLT and TIP fall, it is duration rejection. When external context files are loaded (see step 1b), use physical economy anchors (energy consumption, manufacturing output) to deepen the financialization gap analysis beyond market-cap-to-GDP. |
-| **Systematic Self-Defense** | For every extreme reading, explicitly classify: **value trap** (structural capital flight making something look "cheap") or **crowded trade** (momentum at extremes with everyone on the same side). State which and why. |
-
----
-
 ## Steps
 
-1. Run the extraction script with archive flag:
+1. **Load the analytical lens.** Read `references/analytical-lens.md`. Apply the Detailed Lens (Data Analysis Mode) throughout all analysis. Use the Context type handling rules and Context integration map from that file when loading external contexts in step 4.
+
+2. Run the extraction script with archive flag:
    ```
    .venv/bin/python scripts/extract_data.py -o $TMPDIR/mini-quant-data.json --archive
    ```
    This saves the JSON to both `$TMPDIR` (for reading) and `analysis/YYYY-MM-data.json` (for version history).
 
-2. Read the JSON output from `$TMPDIR/mini-quant-data.json`.
+3. Read the JSON output from `$TMPDIR/mini-quant-data.json`.
 
-3. **Load external contexts.** Check for `contexts/*.json` files. For each file found:
+4. **Load external contexts.** Check for `contexts/*.json` files. For each file found:
    - Read it and parse the JSON envelope (`schema_version`, `context_type`, `data_as_of`, `retrieved_on`, `freshness_days`, `sources`, `data`).
    - Skip files where `data_as_of` is null (empty template, not yet populated).
    - Compute staleness: `today - retrieved_on` in days vs `freshness_days`.
-   - If **fresh** (within threshold): weave the data into the relevant analysis sections per the integration map below.
+   - If **fresh** (within threshold): weave the data into the relevant analysis sections per the context integration map from the analytical lens (step 1).
    - If **stale** (over threshold): include the data but flag it: *"[Data source] last updated [retrieved_on] — may be stale, verify before acting."*
    - If **missing** (file doesn't exist): note the gap honestly: *"[Metric] not available — see prompts/[file] to retrieve."*
 
-   **Context types** — treat differently in the analysis:
-   - `"structural"`: Slow-moving fundamentals (energy share, manufacturing output). Use as permanent anchors in proportionality assessments. Present as baseline facts.
-   - `"seasonal"`: Risk factors tied to earnings/reporting cycles (circular revenue, capex guidance). Highlight with more urgency during the relevant window (e.g., earnings season). Between windows, present as background risk. Label as *"Seasonal structural risk"* when citing.
-   - `"tactical"`: Fast-moving positioning data (CTA, gamma, vol-targeting). Present as current-state context that could change within days. Always include the data date prominently. Label as *"Tactical — as of [date]"* when citing.
+   Apply the context type handling rules and integration map from the analytical lens loaded in step 1.
 
-   Integration map:
-   - `contexts/mag7-circular-revenue.json` (seasonal) → QQQ/QQQE Cash-Flow Anchor section, Structural Flag on circular revenue
-   - `contexts/physical-anchors.json` (structural) → VXUS/SPY Cash-Flow Anchor, Macro Proportionality, financialization gap analysis
-   - `contexts/systematic-positioning.json` (tactical) → Structural Flags (systematic positioning flag), Mechanical lens for concentration pairs
-
-4. **FLAG**: Before generating analysis, show the user a compact summary table of the extracted data:
+5. **FLAG**: Before generating analysis, show the user a compact summary table of the extracted data:
 
    | Pair | Current | 6M Chg | Z-Score | vs 50-SMA | vs 200-SMA | Percentile |
    |------|---------|--------|---------|-----------|------------|------------|
 
    Wait for the user to confirm the data looks correct before proceeding.
 
-5. Generate ALL output files. Write them in this order:
+6. Generate ALL output files. Write them in this order:
    - Per-chart deep dives: `analysis/YYYY-MM-{pair-slug}.md` for each ratio pair
    - Macro synthesis: `analysis/YYYY-MM-macro.md`
 
