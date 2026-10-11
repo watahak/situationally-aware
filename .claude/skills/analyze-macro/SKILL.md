@@ -15,11 +15,11 @@ One extraction, one LLM pass, all output files generated. This is the monthly pu
 
 2. Run the extraction script with archive flag:
    ```
-   .venv/bin/python scripts/extract_data.py -o $TMPDIR/mini-quant-data.json --archive
+   .venv/bin/python scripts/extract_data.py --archive
    ```
-   This saves the JSON to both `$TMPDIR` (for reading) and `analysis/YYYY-MM-data.json` (for version history).
+   This saves the JSON to `analysis/YYYY-MM-data.json`.
 
-3. Read the JSON output from `$TMPDIR/mini-quant-data.json`.
+3. Read the JSON output from `analysis/YYYY-MM-data.json`.
 
 4. **Load external contexts.** Check for `contexts/*.json` files. For each file found:
    - Read it and parse the JSON envelope (`schema_version`, `context_type`, `data_as_of`, `retrieved_on`, `freshness_days`, `sources`, `data`).
