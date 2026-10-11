@@ -60,11 +60,11 @@ def _render_embed(
     prices: pd.DataFrame,
     settings: dict,
     *,
+    theme_mode: str,
     render_echart,
     chart_builders: dict,
     embed_idx: int,
 ) -> bool:
-    """Render one embed directive. Returns True if a chart was rendered."""
     cutoff = pd.Timestamp.now() - pd.Timedelta(days=settings["lookback_days"])
 
     if chart_type == "ratio" and slug:
@@ -85,7 +85,7 @@ def _render_embed(
         sma_d = {k: v.loc[v.index >= cutoff] for k, v in sma_dict.items()}
         display = pair_display_name(pair)
         render_echart(
-            chart_builders["build_ratio_echart"](ratio_d, sma_d, display),
+            chart_builders["build_ratio_echart"](ratio_d, sma_d, display, theme_mode=theme_mode),
             key=f"opinion-ratio-{slug}-{embed_idx}",
             height=390,
             alt=f"{display} ratio spread chart.",
@@ -105,7 +105,7 @@ def _render_embed(
         display = pair_display_name(pair)
         render_echart(
             chart_builders["build_zscore_echart"](
-                zscore_d, CONFIG["zscore_thresholds"], display
+                zscore_d, CONFIG["zscore_thresholds"], display, theme_mode=theme_mode,
             ),
             key=f"opinion-zscore-{slug}-{embed_idx}",
             height=340,
@@ -118,7 +118,7 @@ def _render_embed(
         if roc_df.empty:
             return False
         render_echart(
-            chart_builders["build_heatmap_echart"](roc_df),
+            chart_builders["build_heatmap_echart"](roc_df, theme_mode=theme_mode),
             key=f"opinion-heatmap-{embed_idx}",
             height=max(300, 36 * len(roc_df)),
             alt="Momentum ROC heatmap.",
@@ -128,7 +128,7 @@ def _render_embed(
     if chart_type == "financialization":
         gap_df = calc_financialization_gap(MACRO_ANCHORS["regions"])
         render_echart(
-            chart_builders["build_financialization_echart"](gap_df),
+            chart_builders["build_financialization_echart"](gap_df, theme_mode=theme_mode),
             key=f"opinion-fin-{embed_idx}",
             height=max(300, 80 * len(gap_df)),
             alt="GDP vs market-cap gap chart.",
@@ -140,7 +140,7 @@ def _render_embed(
         if not ctx:
             return False
         render_echart(
-            chart_builders["build_gauges_echart"](ctx),
+            chart_builders["build_gauges_echart"](ctx, theme_mode=theme_mode),
             key=f"opinion-gauges-{embed_idx}",
             height=260,
             alt="Systematic positioning gauges.",
@@ -152,7 +152,7 @@ def _render_embed(
         if not ctx:
             return False
         render_echart(
-            chart_builders["build_sankey_echart"](ctx),
+            chart_builders["build_sankey_echart"](ctx, theme_mode=theme_mode),
             key=f"opinion-sankey-{embed_idx}",
             height=420,
             alt="AI capex circular revenue flow.",
@@ -165,7 +165,7 @@ def _render_embed(
             return False
         render_echart(
             chart_builders["build_butterfly_echart"](
-                ctx["data"], MACRO_ANCHORS["regions"]
+                ctx["data"], MACRO_ANCHORS["regions"], theme_mode=theme_mode,
             ),
             key=f"opinion-butterfly-{embed_idx}",
             height=400,
@@ -181,12 +181,11 @@ def _render_opinion_with_charts(
     prices: pd.DataFrame,
     settings: dict,
     *,
+    theme_mode: str,
     render_echart,
     chart_builders: dict,
 ) -> None:
-    """Split opinion markdown on embed directives, render text and charts."""
     parts = _EMBED_RE.split(content)
-    # parts alternates: text, chart_type, slug|None, text, chart_type, slug|None, ...
     embed_idx = 0
     i = 0
     while i < len(parts):
@@ -202,12 +201,13 @@ def _render_opinion_with_charts(
                 slug,
                 prices,
                 settings,
+                theme_mode=theme_mode,
                 render_echart=render_echart,
                 chart_builders=chart_builders,
                 embed_idx=embed_idx,
             )
             embed_idx += 1
-            i += 1  # skip the slug group
+            i += 1
         i += 1
 
 
@@ -218,23 +218,15 @@ def render_opinion_tab(
     theme_mode: str = "dark",
     render_echart,
     chart_builders: dict,
-    nav_html: str = "",
 ) -> None:
     """Render the Opinion tab.
 
     Parameters
     ----------
     render_echart : callable
-        The ``render_echart_inview`` function from ``app.py`` (passed to
-        avoid circular imports since ``app.py`` is the Streamlit entry point).
+        The ``render_echart_inview`` function (passed to avoid circular imports).
     chart_builders : dict
-        Mapping of builder name -> callable, sourced from ``app.py``.
-        Required keys: build_ratio_echart, build_zscore_echart,
-        build_heatmap_echart, build_financialization_echart,
-        build_gauges_echart, build_sankey_echart, build_butterfly_echart,
-        load_context.
-    nav_html : str
-        Pre-built tab-arrow navigation HTML to place at the bottom.
+        Mapping of builder name -> callable.
     """
     opinion_content = _get_latest("opinion")
     if opinion_content:
@@ -242,6 +234,7 @@ def render_opinion_tab(
             opinion_content,
             prices,
             settings,
+            theme_mode=theme_mode,
             render_echart=render_echart,
             chart_builders=chart_builders,
         )
@@ -251,5 +244,18 @@ def render_opinion_tab(
             "after running `/analyze-macro` to generate the executive brief."
         )
 
-    if nav_html:
-        st.html(nav_html, unsafe_allow_javascript=True)
+    # --- Appendix -------------------------------------------------------------
+    st.header("Appendix")
+
+    macro_content = _get_latest("macro")
+    with st.expander("Full Macro Analysis Report", expanded=False):
+        if macro_content:
+            st.markdown(macro_content)
+        else:
+            st.info(
+                "No macro report yet. Run `/analyze-macro` in Claude Code "
+                "to generate your first monthly report."
+            )
+
+    from ui.navigation import render_back_to_top
+    render_back_to_top(theme_mode, key="opinion-back-to-top")

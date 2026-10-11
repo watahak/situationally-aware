@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import html
-
 import streamlit as st
 
 from ui.theme import _css_theme, get_active_palette
@@ -76,6 +74,19 @@ function slugify(text) {
     .replace(/-+/g, "-");
 }
 
+function autoHeight(parentElement, shell) {
+  const h = shell.getBoundingClientRect().height;
+  let el = parentElement;
+  for (let i = 0; i < 8 && el; i++) {
+    if (el.style) {
+      el.style.height = h ? (h + "px") : "auto";
+      el.style.overflow = "visible";
+    }
+    if (el.getAttribute && el.getAttribute("data-testid") === "stSidebar") break;
+    el = el.parentElement || el.host;
+  }
+}
+
 export default function (component) {
   const { parentElement, data } = component;
   if (!parentElement) return;
@@ -94,18 +105,6 @@ export default function (component) {
     "--toc-active-bg": data?.tocActiveBg || "rgba(56,189,248,0.12)",
   };
   for (const [k, v] of Object.entries(vars)) shell.style.setProperty(k, v);
-
-  // Force the component's host containers to auto-size
-  let el = parentElement;
-  for (let i = 0; i < 6 && el; i++) {
-    if (el.style) {
-      el.style.height = "auto";
-      el.style.overflow = "visible";
-    }
-    // Stop at the sidebar boundary
-    if (el.getAttribute && el.getAttribute("data-testid") === "stSidebar") break;
-    el = el.parentElement;
-  }
 
   let state = instances.get(parentElement);
   if (!state) {
@@ -143,23 +142,20 @@ export default function (component) {
     const panel = getActivePanel();
     if (!panel) {
       nav.innerHTML = '<div class="mq-toc-empty">Loading…</div>';
+      autoHeight(parentElement, shell);
       return;
     }
 
     const headings = Array.from(panel.querySelectorAll("h2")).filter(h => {
       const text = (h.textContent || "").trim();
       if (!text) return false;
-      // Skip headings inside closed expanders
-      const expander = h.closest("[data-testid='stExpander']");
-      if (expander) {
-        const details = expander.matches("details") ? expander : expander.querySelector("details");
-        if (details && !details.open) return false;
-      }
+      if (h.closest("[data-testid='stExpander']")) return false;
       return true;
     });
 
     if (!headings.length) {
       nav.innerHTML = '<div class="mq-toc-empty">No sections on this tab.</div>';
+      autoHeight(parentElement, shell);
       return;
     }
 
@@ -188,6 +184,7 @@ export default function (component) {
     });
 
     nav.appendChild(fragment);
+    autoHeight(parentElement, shell);
 
     // Scroll-spy via IntersectionObserver
     const observer = new IntersectionObserver(entries => {
@@ -277,104 +274,87 @@ def render_toc(theme_mode: str) -> None:
             "tocActiveBg": palette["accent_fill"],
         },
         width="stretch",
-        height=350,
+        height=48,
     )
 
 
-def build_tab_arrows_html(
-    tab_index: int,
-    tab_count: int,
-    tab_labels: list[str],
-    theme_mode: str,
-) -> str:
-    """Build tab-to-tab arrows to place at the bottom of each tab."""
+_BACK_TO_TOP = st.components.v2.component(
+    "mini_quant_back_to_top",
+    html="""
+<div data-role="btt-wrap">
+  <button type="button" data-role="btt-btn">&#8593; Back to top</button>
+</div>
+<style>
+  [data-role="btt-wrap"] {
+    display: flex;
+    justify-content: center;
+    padding: 1.2rem 0 0.4rem;
+  }
+  [data-role="btt-btn"] {
+    border: 1px solid var(--btt-border);
+    background: var(--btt-bg);
+    color: var(--btt-text);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+    transition: border-color 140ms, background 140ms;
+  }
+  [data-role="btt-btn"]:hover {
+    border-color: var(--btt-accent);
+    background: var(--btt-hover);
+  }
+</style>
+""",
+    js="""
+export default function (component) {
+  const { parentElement, data } = component;
+  if (!parentElement || !data) return;
+
+  const wrap = parentElement.querySelector('[data-role="btt-wrap"]');
+  const btn = parentElement.querySelector('[data-role="btt-btn"]');
+  if (!wrap || !btn) return;
+
+  wrap.style.setProperty("--btt-border", data.borderColor || "transparent");
+  wrap.style.setProperty("--btt-bg", data.bgColor || "transparent");
+  wrap.style.setProperty("--btt-hover", data.hoverColor || "transparent");
+  wrap.style.setProperty("--btt-text", data.textColor || "#E2E8F0");
+  wrap.style.setProperty("--btt-accent", data.accentColor || "#38BDF8");
+
+  btn.onclick = () => {
+    let el = document.querySelector('[data-testid="stMainBlockContainer"]');
+    while (el) {
+      const ov = getComputedStyle(el).overflowY;
+      if ((ov === "auto" || ov === "scroll") && el.scrollHeight > el.clientHeight) {
+        el.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      el = el.parentElement;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+}
+""",
+)
+
+
+def render_back_to_top(theme_mode: str, *, key: str) -> None:
     mode = theme_mode if theme_mode in {"light", "dark"} else "dark"
     css_theme = _css_theme(mode)
     palette = get_active_palette(mode)
 
-    labels = list(tab_labels)
-    if len(labels) < tab_count:
-        labels.extend(f"Tab {i + 1}" for i in range(len(labels), tab_count))
+    _BACK_TO_TOP(
+        key=key,
+        data={
+            "borderColor": css_theme["card_border"],
+            "bgColor": css_theme["card_bg"],
+            "hoverColor": css_theme["sidebar_radio_bg"],
+            "textColor": css_theme["body_strong"],
+            "accentColor": palette["accent"],
+        },
+        width="stretch",
+        height=52,
+    )
 
-    has_prev = tab_index > 0
-    has_next = tab_index < (tab_count - 1)
 
-    prev_index = tab_index - 1
-    next_index = tab_index + 1
-
-    prev_label = html.escape(labels[prev_index]) if has_prev else ""
-    next_label = html.escape(labels[next_index]) if has_next else ""
-
-    prev_visibility = "visible" if has_prev else "hidden"
-    next_visibility = "visible" if has_next else "hidden"
-
-    return f"""
-<div
-  data-role="mini-quant-tab-arrows"
-  style="--arrow-border:{css_theme['card_border']};--arrow-bg:{css_theme['card_bg']};--arrow-hover:{css_theme['sidebar_radio_bg']};--arrow-text:{css_theme['body_strong']};--arrow-accent:{palette['accent']};"
->
-  <button type="button" data-target-index="{prev_index}" style="visibility:{prev_visibility};">&#8592; Prev: {prev_label}</button>
-  <button type="button" data-target-index="{next_index}" style="visibility:{next_visibility};">Next: {next_label} &#8594;</button>
-</div>
-<script>
-(() => {{
-  const root = document.currentScript && document.currentScript.previousElementSibling;
-  if (!root) return;
-  const top = window.parent || window;
-  const topDoc = top.document;
-
-  root.querySelectorAll('button[data-target-index]').forEach(button => {{
-    button.onclick = () => {{
-      const idx = Number(button.getAttribute('data-target-index'));
-      if (!Number.isFinite(idx) || idx < 0) return;
-      const tabs = topDoc.querySelectorAll('button[role="tab"]');
-      if (tabs[idx]) {{
-        tabs[idx].click();
-        top.scrollTo({{ top: 0, behavior: 'smooth' }});
-      }}
-    }};
-  }});
-}})();
-</script>
-<style>
-  [data-role="mini-quant-tab-arrows"] {{
-    display: flex;
-    gap: 0.5rem;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-    padding-top: 0.35rem;
-  }}
-  [data-role="mini-quant-tab-arrows"] > button {{
-    border: 1px solid var(--arrow-border);
-    background: var(--arrow-bg);
-    color: var(--arrow-text);
-    border-radius: 999px;
-    font-size: 0.86rem;
-    line-height: 1;
-    font-weight: 600;
-    padding: 0.55rem 0.82rem;
-    cursor: pointer;
-    transition: transform 140ms, border-color 140ms, background-color 140ms, color 140ms;
-    min-width: 9rem;
-    text-align: center;
-  }}
-  [data-role="mini-quant-tab-arrows"] > button:hover {{
-    transform: translateY(-1px);
-    border-color: var(--arrow-accent);
-    background: var(--arrow-hover);
-  }}
-  [data-role="mini-quant-tab-arrows"] > button:active {{
-    transform: translateY(0);
-  }}
-  @media (max-width: 720px) {{
-    [data-role="mini-quant-tab-arrows"] {{
-      flex-direction: column;
-      align-items: stretch;
-    }}
-    [data-role="mini-quant-tab-arrows"] > button {{
-      width: 100%;
-    }}
-  }}
-</style>
-"""

@@ -80,4 +80,4 @@ Paste results into `contexts/physical-anchors.json` using this structure:
   only ~16% of global energy consumption and ~17% of manufacturing output. The
   financialization premium is wider than GDP alone suggests."
 - **analysis/YYYY-MM-vxus-spy.md**: Cash-Flow Anchor section
-- Consumed by analyze-macro and analyze-chart skills via the context loading step
+- Consumed by analyze-macro skill via the context loading step

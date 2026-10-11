@@ -74,4 +74,4 @@ Paste results into `contexts/mag7-circular-revenue.json` using this structure:
 
 - **analysis/YYYY-MM-macro.md**: Structural Flag on circular revenue + QQQ/QQQE Chart Detail — cite specific numbers instead of qualitative claims
 - **analysis/YYYY-MM-qqq-qqqe.md**: Cash-Flow Anchor section
-- Consumed by analyze-macro and analyze-chart skills via the context loading step
+- Consumed by analyze-macro skill via the context loading step

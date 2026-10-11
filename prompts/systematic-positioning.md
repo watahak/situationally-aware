@@ -83,4 +83,4 @@ Field values:
   to sharp reversal if volatility spikes."
 - **analysis/YYYY-MM-spy-rsp.md** and **qqq-qqqe.md**: Mechanical lens — systematic
   positioning context for concentration pairs
-- Consumed by analyze-macro and analyze-chart skills via the context loading step
+- Consumed by analyze-macro skill via the context loading step
