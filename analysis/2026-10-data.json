@@ -1,97 +1,97 @@
 {
-  "generated_at": "2026-10-09",
+  "generated_at": "2026-10-11",
   "trend_months": 6,
   "heatmap": {
     "SPY": {
-      "1W": 0.557401,
-      "1M": 2.378081,
-      "3M": 3.561517,
-      "6M": 14.480701,
-      "1Y": 16.218699
+      "1W": 1.160282,
+      "1M": 2.991878,
+      "3M": 4.182409,
+      "6M": 15.167057,
+      "1Y": 16.915475
     },
     "RSP": {
-      "1W": 1.020359,
-      "1M": -0.236241,
-      "3M": -0.72986,
-      "6M": 8.563449,
-      "1Y": 12.717518
+      "1W": 1.578218,
+      "1M": 0.314679,
+      "3M": -0.181666,
+      "6M": 9.162963,
+      "1Y": 13.339972
     },
     "QQQ": {
-      "1W": -0.266816,
-      "1M": 5.597508,
-      "3M": 5.145004,
-      "6M": 22.601575,
-      "1Y": 22.839955
+      "1W": 0.22546,
+      "1M": 6.118729,
+      "3M": 5.663993,
+      "6M": 23.206716,
+      "1Y": 23.446272
     },
     "QQQE": {
-      "1W": -0.296565,
-      "1M": 3.087281,
-      "3M": 1.720281,
-      "6M": 20.043963,
-      "1Y": 17.680313
+      "1W": 0.436608,
+      "1M": 3.845338,
+      "3M": 2.468285,
+      "6M": 20.92672,
+      "1Y": 18.54569
     },
     "VXUS": {
-      "1W": -1.556832,
-      "1M": -2.350552,
-      "3M": 0.563313,
-      "6M": 4.135775,
-      "1Y": 15.758838
+      "1W": -0.714036,
+      "1M": -1.514551,
+      "3M": 1.42426,
+      "6M": 5.027308,
+      "1Y": 16.749866
     },
     "EEM": {
-      "1W": -2.320082,
-      "1M": -1.343286,
-      "3M": 2.480618,
-      "6M": 9.715272,
-      "1Y": 23.682174
+      "1W": -1.285644,
+      "1M": -0.298503,
+      "3M": 3.565896,
+      "6M": 10.877166,
+      "1Y": 24.991979
     },
     "EWS": {
-      "1W": -4.065529,
-      "1M": -5.244226,
-      "3M": 0.60452,
-      "6M": 11.075952,
-      "1Y": 12.153648
+      "1W": -4.12621,
+      "1M": -5.304161,
+      "3M": 0.540885,
+      "6M": 11.005694,
+      "1Y": 12.082708
     },
     "MCHI": {
-      "1W": 0.23419,
-      "1M": -2.72727,
-      "3M": -2.227295,
-      "6M": -9.583079,
-      "1Y": -20.864495
+      "1W": 2.556592,
+      "1M": -0.473485,
+      "3M": 0.038074,
+      "6M": -7.488142,
+      "1Y": -19.030945
     },
     "KWEB": {
-      "1W": 0.670578,
-      "1M": -1.718495,
-      "3M": -8.425464,
-      "6M": -16.306621,
-      "1Y": -39.74137
+      "1W": 4.484491,
+      "1M": 2.004909,
+      "3M": -4.956154,
+      "6M": -13.13589,
+      "1Y": -37.458467
     },
     "VGK": {
-      "1W": -1.099788,
-      "1M": -4.224168,
-      "3M": -2.523622,
-      "6M": -0.288054,
-      "1Y": 8.744785
+      "1W": -0.405185,
+      "1M": -3.551508,
+      "3M": -1.839018,
+      "6M": 0.41225,
+      "1Y": 9.50853
     },
     "GLD": {
-      "1W": -0.399858,
-      "1M": -4.475727,
-      "3M": 3.129679,
-      "6M": -13.385036,
-      "1Y": 1.697558
+      "1W": 1.167983,
+      "1M": -2.972045,
+      "3M": 4.75308,
+      "6M": -12.021599,
+      "1Y": 3.298415
     },
     "TLT": {
-      "1W": 0.503355,
-      "1M": -3.214131,
-      "3M": -6.157714,
-      "6M": -7.856758,
-      "1Y": -8.703566
+      "1W": 0.645328,
+      "1M": -3.07741,
+      "3M": -6.025151,
+      "6M": -7.726586,
+      "1Y": -8.574608
     },
     "TIP": {
-      "1W": 0.39381,
-      "1M": -1.702253,
-      "3M": -2.430797,
-      "6M": -2.635263,
-      "1Y": -1.934159
+      "1W": 0.29776,
+      "1M": -1.796298,
+      "3M": -2.524145,
+      "6M": -2.728415,
+      "1Y": -2.027976
     }
   },
   "ratio_pairs": {
@@ -99,18 +99,18 @@
       "name": "SPY / RSP",
       "numerator": "SPY",
       "denominator": "RSP",
-      "tooltip": "**SPY / RSP** tracks US mega-cap concentration risk vs. the broader market. A **rising** line means large-caps are leading (concentration risk is growing). A **falling** line signals improving market breadth \u2014 a healthier, broader rally.",
-      "current": 3.652853,
-      "sma_50": 3.549341,
-      "sma_200": 3.512763,
+      "tooltip": "**SPY / RSP** compares cap-weighted with equal-weight S&P 500 performance. A **rising** line means SPY is outperforming; a **falling** line means RSP is outperforming. This is a relative breadth/concentration proxy, not proof of flows or a broad rally; both ETFs can fall. This ratio serves as a concentration proxy: when cap-weighted pulls ahead of equal-weight, index returns are being driven by fewer, larger names \u2014 a structural signal of passive-flow concentration.",
+      "current": 3.654572,
+      "sma_50": 3.553472,
+      "sma_200": 3.513271,
       "position_vs_sma50": "above",
       "position_vs_sma200": "above",
       "sma50_above_sma200": true,
-      "value_6m_ago": 3.459546,
-      "change_6m_pct": 5.59,
+      "value_6m_ago": 3.513429,
+      "change_6m_pct": 4.02,
       "high_6m": 3.690503,
       "low_6m": 3.38566,
-      "percentile_6m": 91.2,
+      "percentile_6m": 91.9,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -138,7 +138,7 @@
         },
         {
           "date": "2026-10",
-          "value": 3.652853
+          "value": 3.654572
         }
       ]
     },
@@ -146,18 +146,18 @@
       "name": "QQQ / QQQE",
       "numerator": "QQQ",
       "denominator": "QQQE",
-      "tooltip": "**QQQ / QQQE** tracks Nasdaq mega-cap concentration \u2014 the \"Mag 7 flywheel.\" A **rising** line means the largest tech names are pulling further ahead (passive inflow concentration accelerating). A **falling** line means Nasdaq breadth is improving \u2014 gains spreading beyond the top holdings.",
-      "current": 6.176816,
-      "sma_50": 5.987549,
-      "sma_200": 6.002326,
+      "tooltip": "**QQQ / QQQE** compares cap-weighted with equal-weight Nasdaq 100 performance. A **rising** line means QQQ is outperforming; a **falling** line means QQQE is outperforming. Relative price performance does not measure passive inflows or establish their cause. A tech-sector concentration gauge. Widening divergence suggests mega-cap names are absorbing a disproportionate share of passive index inflows relative to the broader Nasdaq 100 constituents.",
+      "current": 6.161992,
+      "sma_50": 5.99363,
+      "sma_200": 6.003236,
       "position_vs_sma50": "above",
       "position_vs_sma200": "above",
       "sma50_above_sma200": false,
-      "value_6m_ago": 6.022369,
-      "change_6m_pct": 2.56,
-      "high_6m": 6.332442,
+      "value_6m_ago": 6.102759,
+      "change_6m_pct": 0.97,
+      "high_6m": 6.332443,
       "low_6m": 5.730829,
-      "percentile_6m": 86.4,
+      "percentile_6m": 83.1,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -185,7 +185,7 @@
         },
         {
           "date": "2026-10",
-          "value": 6.176816
+          "value": 6.161992
         }
       ]
     },
@@ -193,18 +193,18 @@
       "name": "VXUS / SPY",
       "numerator": "VXUS",
       "denominator": "SPY",
-      "tooltip": "**VXUS / SPY** measures ex-US equity performance relative to US equity. A **rising** line means international markets are outperforming \u2014 capital is rotating out of the US. A **falling** line means US exceptionalism continues. Unlike VT (65% US-weighted), VXUS has zero US exposure, giving an uncontaminated signal.",
-      "current": 0.108666,
-      "sma_50": 0.112921,
-      "sma_200": 0.114792,
+      "tooltip": "**VXUS / SPY** compares ex-US equities with US large-cap equities. A **rising** line means VXUS is outperforming; a **falling** line means SPY is outperforming. USD-listed ETF returns include currency effects and do not verify capital moving between regions. Tracks the relative performance of international vs. US large-cap equities. A sustained shift in this ratio can indicate early-stage geographic rebalancing in global allocations.",
+      "current": 0.108943,
+      "sma_50": 0.112812,
+      "sma_200": 0.114788,
       "position_vs_sma50": "below",
       "position_vs_sma200": "below",
       "sma50_above_sma200": false,
-      "value_6m_ago": 0.119208,
-      "change_6m_pct": -8.84,
-      "high_6m": 0.119208,
+      "value_6m_ago": 0.117935,
+      "change_6m_pct": -7.62,
+      "high_6m": 0.117935,
       "low_6m": 0.108666,
-      "percentile_6m": 0.0,
+      "percentile_6m": 0.8,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -232,7 +232,7 @@
         },
         {
           "date": "2026-10",
-          "value": 0.108666
+          "value": 0.108943
         }
       ]
     },
@@ -240,18 +240,18 @@
       "name": "EWS / EEM",
       "numerator": "EWS",
       "denominator": "EEM",
-      "tooltip": "**EWS / EEM** tracks Singapore's relative strength within emerging markets. A **rising** line suggests a quality/defensive EM bid (SGD strength, stable governance). A **falling** line indicates risk-on EM momentum elsewhere.",
-      "current": 0.478366,
-      "sma_50": 0.499844,
-      "sma_200": 0.472609,
+      "tooltip": "**EWS / EEM** compares developed-market Singapore equities with emerging-market equities. A **rising** line means EWS is outperforming; a **falling** line means EEM is outperforming. USD-listed ETF returns include currency and sector effects; the ratio alone does not identify flows or their causes. Singapore is a developed-market financial hub benchmarked against the broader EM universe. Relative strength here can reflect trade-flow positioning and USD funding conditions in Asia.",
+      "current": 0.473054,
+      "sma_50": 0.499112,
+      "sma_200": 0.472471,
       "position_vs_sma50": "below",
       "position_vs_sma200": "above",
       "sma50_above_sma200": true,
-      "value_6m_ago": 0.472764,
-      "change_6m_pct": 1.18,
+      "value_6m_ago": 0.465286,
+      "change_6m_pct": 1.67,
       "high_6m": 0.52972,
       "low_6m": 0.414624,
-      "percentile_6m": 49.6,
+      "percentile_6m": 49.2,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -279,7 +279,7 @@
         },
         {
           "date": "2026-10",
-          "value": 0.478366
+          "value": 0.473054
         }
       ]
     },
@@ -287,18 +287,18 @@
       "name": "KWEB / MCHI",
       "numerator": "KWEB",
       "denominator": "MCHI",
-      "tooltip": "**KWEB / MCHI** tracks Chinese big tech concentration within broad China equity. A **rising** line means internet/platform names (Alibaba, Tencent, PDD) are leading \u2014 growth/tech bid. A **falling** line signals rotation into old-economy China (banks, energy, industrials) or regulatory headwinds on tech.",
-      "current": 0.467679,
-      "sma_50": 0.479676,
-      "sma_200": 0.510861,
+      "tooltip": "**KWEB / MCHI** compares Chinese internet equities with broad China equities, with overlapping exposures. A **rising** line means KWEB is outperforming; a **falling** line means MCHI is outperforming. This does not establish sector flows or regulatory causes. Compares Chinese internet equities against broad China exposure. Divergence often reflects regulatory risk repricing or sector-specific capital rotation within the Chinese market.",
+      "current": 0.474405,
+      "sma_50": 0.479053,
+      "sma_200": 0.51036,
       "position_vs_sma50": "below",
       "position_vs_sma200": "below",
       "sma50_above_sma200": false,
-      "value_6m_ago": 0.504104,
-      "change_6m_pct": -7.23,
+      "value_6m_ago": 0.514155,
+      "change_6m_pct": -7.73,
       "high_6m": 0.516981,
       "low_6m": 0.462672,
-      "percentile_6m": 12.0,
+      "percentile_6m": 25.8,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -326,7 +326,7 @@
         },
         {
           "date": "2026-10",
-          "value": 0.467679
+          "value": 0.474405
         }
       ]
     },
@@ -334,18 +334,18 @@
       "name": "KWEB / QQQ",
       "numerator": "KWEB",
       "denominator": "QQQ",
-      "tooltip": "**KWEB / QQQ** tracks China tech vs. US tech \u2014 the global tech capital rotation signal. A **rising** line means Chinese internet names are outperforming US mega-cap tech (catch-up/re-rating trade, tariff d\u00e9tente, or valuation mean-reversion). A **falling** line means continued US tech dominance or China tech de-rating (regulatory, geopolitical, or capital flight).",
-      "current": 0.03213,
-      "sma_50": 0.035983,
-      "sma_200": 0.043782,
+      "tooltip": "**KWEB / QQQ** compares Chinese internet equities with the US tech-heavy Nasdaq 100. A **rising** line means KWEB is outperforming; a **falling** line means QQQ is outperforming. The ratio is a relative-performance proxy, not measured cross-border flows or evidence of a particular cause. A US-vs-China technology leadership proxy. Structural divergence can reflect index-rule constraints, delisting risk, or forced rebalancing rather than pure sentiment shifts.",
+      "current": 0.033184,
+      "sma_50": 0.035825,
+      "sma_200": 0.043666,
       "position_vs_sma50": "below",
       "position_vs_sma200": "below",
       "sma50_above_sma200": false,
-      "value_6m_ago": 0.046618,
-      "change_6m_pct": -31.08,
+      "value_6m_ago": 0.046601,
+      "change_6m_pct": -28.79,
       "high_6m": 0.047097,
       "low_6m": 0.031831,
-      "percentile_6m": 1.6,
+      "percentile_6m": 8.9,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -373,7 +373,7 @@
         },
         {
           "date": "2026-10",
-          "value": 0.03213
+          "value": 0.033184
         }
       ]
     },
@@ -381,18 +381,18 @@
       "name": "GLD / TLT",
       "numerator": "GLD",
       "denominator": "TLT",
-      "tooltip": "**GLD / TLT** pits hard money (gold) against fiat duration (long-term Treasuries). A **rising** line reflects real-asset preference, inflation fears, or de-dollarization. A **falling** line signals a deflation/flight-to-duration trade.",
-      "current": 4.862206,
-      "sma_50": 4.915911,
-      "sma_200": 4.972047,
-      "position_vs_sma50": "below",
+      "tooltip": "**GLD / TLT** compares gold with long-duration US Treasuries. A **rising** line means GLD is outperforming; a **falling** line means TLT is outperforming. Relative prices alone do not establish inflation expectations, de-dollarization, or transfers between these assets. A real-asset vs. sovereign-duration proxy. Persistent gold outperformance relative to long-dated Treasuries can indicate shifting confidence in sovereign credit or duration risk appetite.",
+      "current": 4.931777,
+      "sma_50": 4.922357,
+      "sma_200": 4.972526,
+      "position_vs_sma50": "above",
       "position_vs_sma200": "below",
       "sma50_above_sma200": false,
-      "value_6m_ago": 5.136156,
-      "change_6m_pct": -5.33,
+      "value_6m_ago": 5.191535,
+      "change_6m_pct": -5.0,
       "high_6m": 5.241521,
       "low_6m": 4.253317,
-      "percentile_6m": 36.8,
+      "percentile_6m": 58.1,
       "monthly_values": [
         {
           "date": "2026-04",
@@ -420,7 +420,7 @@
         },
         {
           "date": "2026-10",
-          "value": 4.862206
+          "value": 4.931777
         }
       ]
     }
@@ -433,9 +433,9 @@
         -2,
         2
       ],
-      "current": 1.528116,
+      "current": 1.490252,
       "high_6m": 3.164571,
-      "low_6m": -2.403385,
+      "low_6m": -2.403384,
       "days_above_upper": 30,
       "days_below_lower": 2,
       "direction": "sideways"
@@ -447,10 +447,10 @@
         -2,
         2
       ],
-      "current": 1.572398,
-      "high_6m": 3.118817,
-      "low_6m": -2.759104,
-      "days_above_upper": 23,
+      "current": 1.405781,
+      "high_6m": 3.11882,
+      "low_6m": -2.759103,
+      "days_above_upper": 21,
       "days_below_lower": 2,
       "direction": "falling"
     },
@@ -461,11 +461,11 @@
         -2,
         2
       ],
-      "current": -3.156472,
+      "current": -2.727235,
       "high_6m": 1.151856,
       "low_6m": -3.170573,
       "days_above_upper": 0,
-      "days_below_lower": 9,
+      "days_below_lower": 10,
       "direction": "falling"
     },
     "EWS / EEM": {
@@ -475,11 +475,11 @@
         -2,
         2
       ],
-      "current": -2.170456,
+      "current": -2.525062,
       "high_6m": 3.02775,
       "low_6m": -2.535313,
       "days_above_upper": 13,
-      "days_below_lower": 9,
+      "days_below_lower": 10,
       "direction": "rising"
     },
     "KWEB / MCHI": {
@@ -489,7 +489,7 @@
         -2,
         2
       ],
-      "current": -0.898315,
+      "current": -0.483046,
       "high_6m": 1.854707,
       "low_6m": -2.666753,
       "days_above_upper": 0,
@@ -503,8 +503,8 @@
         -2,
         2
       ],
-      "current": -1.591634,
-      "high_6m": 1.652331,
+      "current": -1.167773,
+      "high_6m": 1.652332,
       "low_6m": -2.22272,
       "days_above_upper": 0,
       "days_below_lower": 11,
@@ -517,7 +517,7 @@
         -2,
         2
       ],
-      "current": 0.083865,
+      "current": 0.3938,
       "high_6m": 2.47182,
       "low_6m": -3.402513,
       "days_above_upper": 4,
@@ -580,59 +580,59 @@
     "stocks": [
       {
         "symbol": "AAPL",
-        "market_cap": 4968150990848,
+        "market_cap": 4912984883200,
         "free_cashflow": 107721875456,
-        "fcf_yield_pct": 2.17,
-        "trailing_pe": 39.03899,
-        "forward_pe": 35.505985
+        "fcf_yield_pct": 2.19,
+        "trailing_pe": 38.605507,
+        "forward_pe": 35.11173
       },
       {
         "symbol": "MSFT",
-        "market_cap": 3880664432640,
+        "market_cap": 3973186846720,
         "free_cashflow": 16545500160,
-        "fcf_yield_pct": 0.43,
-        "trailing_pe": 29.114761,
-        "forward_pe": 22.072176
+        "fcf_yield_pct": 0.42,
+        "trailing_pe": 29.111536,
+        "forward_pe": 22.59842
       },
       {
         "symbol": "NVDA",
-        "market_cap": 5565400481792,
+        "market_cap": 5536424132608,
         "free_cashflow": 41809874944,
-        "fcf_yield_pct": 0.75,
-        "trailing_pe": 29.1378,
-        "forward_pe": 14.482299
+        "fcf_yield_pct": 0.76,
+        "trailing_pe": 28.986094,
+        "forward_pe": 14.406897
       },
       {
         "symbol": "GOOG",
-        "market_cap": 4217615155200,
+        "market_cap": 4254305091584,
         "free_cashflow": 22665000960,
-        "fcf_yield_pct": 0.54,
-        "trailing_pe": 17.303562,
-        "forward_pe": 22.881536
+        "fcf_yield_pct": 0.53,
+        "trailing_pe": 17.454088,
+        "forward_pe": 22.865774
       },
       {
         "symbol": "AMZN",
-        "market_cap": 2740370800640,
+        "market_cap": 2830652145664,
         "free_cashflow": 3219124992,
-        "fcf_yield_pct": 0.12,
-        "trailing_pe": 20.439259,
-        "forward_pe": 24.273798
+        "fcf_yield_pct": 0.11,
+        "trailing_pe": 21.112629,
+        "forward_pe": 25.073498
       },
       {
         "symbol": "META",
-        "market_cap": 1836471812096,
+        "market_cap": 1830816186368,
         "free_cashflow": 21553625088,
-        "fcf_yield_pct": 1.17,
-        "trailing_pe": 27.162395,
-        "forward_pe": 20.867945
+        "fcf_yield_pct": 1.18,
+        "trailing_pe": 27.078747,
+        "forward_pe": 20.80368
       },
       {
         "symbol": "TSLA",
-        "market_cap": 1481080307712,
+        "market_cap": 1511491895296,
         "free_cashflow": 4835999744,
-        "fcf_yield_pct": 0.33,
-        "trailing_pe": 347.2222,
-        "forward_pe": 174.84636
+        "fcf_yield_pct": 0.32,
+        "trailing_pe": 354.35184,
+        "forward_pe": 175.3534
       }
     ],
     "aggregates": {

@@ -1,60 +1,59 @@
 # VXUS / SPY — Deep Dive — October 2026
 
-*Generated 2026-10-09. Data as of most recent trading day.*
+*Generated 2026-10-11. Data as of 2026-10-11.*
 
-> **One-sentence summary**: International equities have fallen to their lowest relative level against the US in the entire 6-month window, with a Z-score of -3.16 marking a historic extreme — yet the mechanical forces driving this divergence show no sign of reversal.
+> **One-sentence summary**: International equities are at the 0.8th percentile of their 6-month range against US large-caps, with the ratio in a confirmed structural downtrend and Z-score at -2.73 — an extreme discount reading where the value trap flag applies because no mechanical reversal is visible in the data.
 
 ## Current State
-- Ratio at 0.1087 — for every dollar of SPY, VXUS buys ~10.9 cents of international exposure, the cheapest reading in the dataset
-- Below both 50-SMA (0.1129, -3.8%) and 200-SMA (0.1148, -5.3%) — confirmed structural downtrend
-- 50-SMA below 200-SMA — bearish structural alignment
-- Z-score -3.16: extreme negative, beyond the ±2 threshold by a full standard deviation
-- 0th percentile of 6M range — literally at the low
+
+- Current ratio 0.1089: for every unit of SPY exposure, VXUS buys ~$0.109 of equivalent — near the absolute low of the past 6-month range, meaning international equities have rarely traded this cheap relative to US large-caps in this window
+- Below both 50-SMA (0.1128) and 200-SMA (0.1148): ratio is in double-SMA compression with both moving averages acting as overhead resistance, not support
+- 50-SMA is below 200-SMA (death cross configuration): structural trend is bearish for international vs US; no moving average is defending a floor
+- Z-score: -2.727 — extreme territory, outside the -2 lower threshold; 10 sessions in the past 6 months spent below the band, with direction still falling
+- 6M percentile: 0.8th — the ratio is sitting at the practical floor of its 6-month range
 
 ## 6-Month Trend
-- -8.84% decline, driven by SPY +14.5% vs VXUS +4.1% — a ~10pp absolute performance gap
-- Trajectory: relentless staircase decline. Every month is lower than the one before, with only the smallest bounces (Jun 0.1146, Aug 0.1139) that each failed to recover the prior month's close. The decline accelerated in Sep–Oct
-- 50-SMA crossed below 200-SMA and the gap is widening — no bottoming signal
-- Z-score spent 9 days below -2, hit -3.17 (effectively today's reading) — the extreme is still being extended, not recovering from it
+
+- Ratio declined -7.62% over 6 months (0.1179 to 0.1089), entirely driven by absolute return divergence: VXUS returned +5.0% over 6M while SPY returned +15.2% — a ~10pp absolute return gap in SPY's favor
+- Monthly trajectory is a near-unbroken one-directional decline: Apr 0.1154 → May 0.1136 → Jun 0.1146 → Jul 0.1133 → Aug 0.1139 → Sep 0.1114 → Oct 0.1089; the Jun–Aug plateauing briefly reversed, but Sep–Oct resumed the downtrend at an accelerating pace
+- SMA regime: 50-SMA crossed below 200-SMA and has not recovered — the death cross is structurally in place, indicating the medium-term trend favors continued US outperformance
+- Z-score traveled from a 6M high of +1.15 to a current -2.73, spending the final weeks in extreme territory with zero days above the upper threshold over the full period — no mean-reversion recovery occurred
 
 ## Structural Risk Identification
 
-**1. MECHANICAL — Global index reflexivity creating a self-reinforcing US gravity well**
+**1. MECHANICAL — What structural force could produce this ratio movement?**
 
-This is the clearest mechanical flywheel in the dataset. MSCI ACWI gives the US ~63% weight. As US equities outperform, the US weight increases in every global benchmark — forcing passive global allocators (sovereign wealth funds, pension funds, 401(k) target-date funds with international allocations) to buy more US equity and proportionally less international. This is reflexive by construction: US outperformance → higher US index weight → more forced US buying → more US outperformance.
+- The US passive inflow mechanic (401(k) auto-allocation, cap-weighted index default exposure) continuously bids SPY-constituent names proportional to their existing weight, creating a self-reinforcing loop: SPY outperforms → SPY constituents' weights grow → next rebalancing allocates more to the same names
+- VXUS holds approximately 7,800 non-US stocks but lacks an equivalent systematic inflow engine — no major US retirement allocation defaults to international, so VXUS receives no structural bid comparable to SPY
+- The death cross and 0.8th percentile position confirm the mechanical force has been active and sustained: the ratio has not recovered to its 6M midpoint even once during the downtrend, suggesting no systematic counter-flow has been large enough to absorb SPY momentum
+- Z-score direction is still falling: the absence of any upper-threshold days means the structural mechanical force has operated one-directionally for the entire observation period
 
-CTA net long US equities at the 78th percentile (*Tactical — as of 2026-10-07*) adds systematic trend-following capital to the same side. Positive dealer gamma on SPY stabilizes the US leg from drawdowns, while no equivalent dampening mechanism supports VXUS.
+**2. CASH-FLOW ANCHOR — Is this price anchored in reality?**
 
-VXUS is not declining in absolute terms — it returned +4.1% over 6M. The international economy is not contracting; it is simply being starved of marginal capital as the US siphons global passive flows.
+- US financialization gap: +37pp (US market cap = 63% of global ACWI vs US GDP = 26% of global GDP) — the largest positive gap of any region tracked; SPY's continued outperformance is expanding this premium further
+- Physical economy anchors (structural — Energy Institute 2024 / World Bank UNIDO 2023; retrieved 2026-10-09, age 2 days, within 365-day freshness threshold): the US accounts for 15.2% of global primary energy consumption and 15.9% of global manufacturing value added — against a 63% global market cap weight, the gap versus physical output anchors is approximately +47pp
+- VXUS covers all non-US equities, which combined represent ~74% of global GDP, ~85% of global energy consumption, and ~84% of global manufacturing value added — yet trade at only ~37% of global market cap weight
+- Every session the ratio declines, the US financialization premium versus physical output anchors deepens further; the ongoing VXUS discount is not anchored in GDP or real production proportions
 
-**2. CASH-FLOW ANCHOR — The financialization gap is extraordinary and widening**
+**3. SELF-DEFENSE — Value trap or crowded trade?**
 
-The US commands 63% of global equity market cap on 26% of global GDP — a +37pp financialization gap. Against physical economy measures, the distortion is even more severe: US energy consumption is 15.2% and manufacturing output 15.9% of global totals. The equity market prices the US at 4x its physical economy share.
-
-Contrast with the rest of the world embedded in VXUS: Europe (17% GDP / 14% market cap, -3pp gap), China (17.5% GDP / 3.5% market cap, -14pp gap), EM ex-China (25% GDP / 9% market cap, -16pp gap). The non-US world collectively produces ~74% of global GDP but holds ~37% of global equity market cap.
-
-The ratio at its 6M low (0th percentile) and an absolute new extreme means this financialization premium is still expanding — the market is pricing even more US exceptionalism into the gap, despite no change in the underlying physical economy shares.
-
-**3. SELF-DEFENSE — Value trap, not dislocation**
-
-At Z -3.16 and the 0th percentile, this has all the surface characteristics of a deep value opportunity for international equities. But every mechanical force points the same way: passive index reflexivity (forcing more into US), CTA trend-following (net long US), dealer gamma (stabilizing US but not international), and vol-targeting (elevated US equity allocation).
-
-A value trap occurs when structural capital flight makes something look "cheap" while the forces driving the cheapness are ongoing and self-reinforcing. That is precisely the situation here. International equities are not mispriced by mistake — they are mechanically deprived of the passive flow engine that drives US returns. Until US index weight stops growing (which requires US underperformance — a circular condition) or a catalyst forces systematic rebalancing, buying international on cheapness alone means standing in front of a structural capital flow.
+- **Value trap** applies to the VXUS side: the ratio is at a 6-month extreme low with no reversal, and structural capital flow mechanics (passive US inflows, cap-weighting flywheel) show no sign of abating — something appearing "cheap" on a relative ratio basis is not a sufficient catalyst when the structural force is one-directional
+- **Crowded trade** applies to the SPY side: SPY represents 63% of global market cap while the US accounts for only 15-16% of physical economic output; this degree of cap-weighting concentration means a systematic rebalancing event (forced VaR selling, index-cap rules, or a passive-inflow slowdown) would disproportionately hit the most overweight names
+- The data shows zero days above the upper Z-score threshold in 6 months — confirming no technical relief for any VXUS/SPY recovery was strong enough to register as extreme positive momentum, further reinforcing the value trap classification
 
 ## Risk–Price Proportionality
 
 **Assessment: Understated**
 
-The -8.84% ratio decline and Z -3.16 look extreme, but the structural machinery driving the move (index weight reflexivity, CTA, passive flows) is accelerating, not mean-reverting. The financialization gap (+37pp) and physical economy disconnect (15% production share → 63% market cap) are large enough that a simple ratio reading understates the magnitude of the structural dislocation. The ratio could continue falling without any fundamental deterioration in international economies — all that's needed is continued US passive flow dominance.
+The -7.62% ratio decline reflects real and measurable SPY outperformance, but the underlying structural imbalance — US at 63% global market cap versus 15.2% of global energy and 15.9% of manufacturing output — is a far larger structural distortion than a single-period ratio decline captures; the structural risk of eventual US premium compression is materially larger than the observed ratio movement alone implies.
 
 ## Valuation Territory
 
 **Deep Discount**
 
-Z-score < -2 (-3.16) AND percentile < 10th (0th) — mechanically qualifies as Deep Discount. This measures the relative pricing of international vs US equity, and it is at a historic extreme within the lookback window.
-
-Critical context: this is a **value trap**, not a genuine dislocation. The discount is driven by structural capital flight (passive index reflexivity), not temporary mispricing. The financialization gap (+37pp) is the underlying condition that the market is actively pricing deeper — buying this discount without a mechanical catalyst for reversal means fighting the flow.
+Z-score -2.73 (below -2) and 6M percentile of 0.8 (below 10th) satisfy both criteria for Deep Discount; for this geographic pair, Deep Discount means international equities trade at the lowest relative level of the recent 6-month window against US large-caps, with the value trap classification in force — the mechanical driver of the discount (US passive inflows, cap-weighting feedback) has not reversed.
 
 ## What to Watch
-- **0.1087 (current level = 6M low)**: Any new low extends the extreme. At Z -3.16, even small moves lower are statistically rare — but the steady grind pattern shows the ratio doesn't care about its own statistics
-- **0.1129 (50-SMA)**: Reclaiming the 50-SMA would be the first sign the trend is breaking — this would require either US underperformance or a catalyst that forces global index rebalancing away from the US
+
+- Z-score recovery above -2.0 (currently -2.73): a sustained move back above the lower threshold would be the first quantifiable signal that the mechanical force is losing momentum; a recovery above -1.5 held for multiple sessions would suggest a regime shift rather than noise
+- SMA crossover: 50-SMA (0.1128) crossing back above 200-SMA (0.1148) would reverse the death cross; a ~0.83% absolute ratio gap separates them, requiring sustained VXUS outperformance over multiple weeks to close
